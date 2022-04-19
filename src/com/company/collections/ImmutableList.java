@@ -4,8 +4,77 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class ImmutableList<E> implements ImmutableCollection<E> {
+    @Override
+    public int size() {
+        return 0;
+    }
 
-    // ====================================
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return false;
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return null;
+    }
+
+    @Override
+    public Object[] toArray() {
+        return new Object[0];
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return null;
+    }
+
+    @Override
+    public ImmutableCollection<E> add(E e) {
+        return null;
+    }
+
+    @Override
+    public ImmutableCollection<E> remove(Object o) {
+        return null;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return false;
+    }
+
+    @Override
+    public ImmutableCollection<E> addAll(Collection<? extends E> c) {
+        return null;
+    }
+
+    @Override
+    public ImmutableCollection<E> removeAll(Collection<?> c) {
+        return null;
+    }
+
+    @Override
+    public ImmutableCollection<E> removeIf(Predicate<? super E> filter) {
+        return null;
+    }
+
+    @Override
+    public ImmutableCollection<E> retainAll(Collection<?> c) {
+        return null;
+    }
+
+    @Override
+    public ImmutableCollection<E> clear() {
+        return null;
+    }
+
+    /*// ====================================
     //               FIELDS
     // ====================================
 
@@ -156,7 +225,7 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
     @Override
     public String toString() {
         return Arrays.toString(toArray());
-    }
+    }*/
 
     /*
 

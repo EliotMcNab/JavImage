@@ -1,59 +1,32 @@
 package com.company.collections;
 
 import java.util.*;
+import java.util.function.Predicate;
 
-public class ListChange<E> implements Collection<E> {
+public class ListChange<E> implements ImmutableCollection<E> {
 
+/*
     // ====================================
     //               FIELDS
     // ====================================
 
-    private final HashMap<Integer, Object> changes;
-    private int start;
+    private E[] changes;
+    private int startIndex;
     private int size;
 
     // ====================================
-    //            CONSTRUCTOR
+    //             CONSTRUCTOR
     // ====================================
 
     public ListChange() {
-        changes = new HashMap<>();
-        start = 0;
-        size = 0;
-    }
-
-    public ListChange(final E[] array) {
-        changes = new HashMap<>();
-        start = 0;
-        size = array.length;
-        registerChanges(array);
-    }
-
-    public ListChange(final int start, final int size) {
-        this.changes = new HashMap<>();
-        this.start = start;
-        this.size = size;
-    }
-
-    private void registerChanges(final Object[] array) {
-        for (int i = 0; i < array.length; i++) {
-            changes.put(i, array[i]);
-        }
+        this.changes = (E[]) new Object[0];
+        this.startIndex = 0;
+        this.size = 0;
     }
 
     @Override
     public int size() {
-        return size - start;
-    }
-
-    public Set<Map.Entry<Integer, E>> getChanges() {
-        final Set<Map.Entry<Integer, E>> entrySet = new HashSet<>();
-
-        for (Map.Entry<Integer, Object> entry : changes.entrySet()) {
-            entrySet.add(new AbstractMap.SimpleEntry<>(entry.getKey(), (E) entry.getValue()));
-        }
-
-        return entrySet;
+        return size;
     }
 
     @Override
@@ -63,7 +36,7 @@ public class ListChange<E> implements Collection<E> {
 
     @Override
     public boolean contains(Object o) {
-        return changes.containsKey(o);
+        return Arrays.binarySearch(changes, o) >= 0;
     }
 
     @Override
@@ -73,7 +46,7 @@ public class ListChange<E> implements Collection<E> {
 
     private class Itr implements Iterator<E> {
 
-        private int cursor = start;
+        private int cursor;
 
         @Override
         public boolean hasNext() {
@@ -82,13 +55,13 @@ public class ListChange<E> implements Collection<E> {
 
         @Override
         public E next() {
-            return (E) changes.get(cursor++);
+            return changes[cursor++];
         }
     }
 
     @Override
-    public Object[] toArray() {
-        return changes.values().toArray();
+    public E[] toArray() {
+        return changes;
     }
 
     @Override
@@ -98,106 +71,295 @@ public class ListChange<E> implements Collection<E> {
 
     @Override
     public boolean add(E e) {
-        if (size == Integer.MAX_VALUE) throw new ArrayStoreException("maximum number of changes reached");
-        changes.put(size++, e);
+        if (size == Integer.MAX_VALUE)
+            throw new ArrayStoreException("Impossible to add new changes, Integer Max Value reached");
+
+        size++;
+        final E[] newChanges = (E[]) new Object[size];
+        System.arraycopy(changes, 0, newChanges, 0, size - 1);
+        newChanges[size - 1] = e;
+        changes = newChanges;
+        return true;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        if (size + c.size() >= Integer.MAX_VALUE)
+            throw new ArrayStoreException("Impossible to add new changes, Integer Max Value reached");
+
+        final E[] newChanges = (E[]) new Object[size + c.size()];
+        final E[] cArray = (E[]) c.toArray();
+
+        System.arraycopy(changes, 0, newChanges, 0, size);
+        System.arraycopy(cArray, 0, newChanges, size, cArray.length);
+        changes = newChanges;
+        size += c.size();
         return true;
     }
 
     @Override
     public boolean remove(Object o) {
-        for (Map.Entry<Integer, Object> entry : changes.entrySet()) {
-            if (Objects.equals(o, entry.getValue())) {
-                changes.remove(entry.getKey());
-                updateIndexes(entry.getKey());
-                size--;
-                return true;
-            }
-        }
-        return false;
-    }
+        final int deletionIndex = Arrays.binarySearch(changes, o);
+        if (deletionIndex < 0) return false;
 
-    private void updateIndexes(final int index) {
-        for (int i = index + 1; i < size; i++) {
-            replaceKey(i, i - 1);
-        }
-    }
+        final E[] newChanges = (E[]) new Object[size - 1];
+        if (deletionIndex != 0)
+            System.arraycopy(changes, 0, newChanges, 0, deletionIndex);
+        if (deletionIndex != size - 1)
+            System.arraycopy(changes, deletionIndex + 1, newChanges, deletionIndex, size - 1 - deletionIndex);
+        changes = newChanges;
+        size--;
 
-    private void replaceKey(final int oldKey, final int newKey) {
-        if (!changes.containsKey(oldKey)) return;
-        changes.put(newKey, changes.get(oldKey));
-        changes.remove(oldKey);
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        return changes.keySet().containsAll(c);
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends E> c) {
-        for (E e : c) {
-            add(e);
-        }
         return true;
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        boolean changed = false;
-        for (Object o : c) {
-            changed = remove(o) || changed;
+        final int[] collectionSearch = new int[c.size()];
+        final Object[] cArray = c.toArray();
+        for (int i = 0; i < c.size(); i++) {
+            collectionSearch[i] = Arrays.binarySearch(changes, cArray[i]);
         }
-        return changed;
+
+        final int[] deletionIndexes = Arrays.stream(collectionSearch).filter(value -> value >= 0).sorted().toArray();
+        final int deletionCount = deletionIndexes.length;
+        final int newSize = size - deletionCount;
+        final E[] newChanges = (E[]) new Object[newSize];
+
+        int lastDeletion = -1;
+        int index = 0;
+        for (int deletionIndex : deletionIndexes) {
+            final int from = lastDeletion + 1;
+            final int length = deletionIndex - (lastDeletion + 1);
+            lastDeletion = deletionIndex;
+            System.arraycopy(changes, from, newChanges, index, length);
+            index += length;
+        }
+
+        changes = newChanges;
+        size = newChanges.length;
+        return true;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        for (Object o : c) {
+            if (!contains(o)) return false;
+        }
+        return true;
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        boolean changed = false;
-        for (Object value : changes.values()) {
-            if (!c.contains(value)) {
-                remove(value);
-                changed = true;
-            }
+        if (c.size() == 0) return false;
+
+        final int[] collectionSearch = new int[c.size()];
+        final Object[] cArray = c.toArray();
+        for (int i = 0; i < c.size(); i++) {
+            collectionSearch[i] = Arrays.binarySearch(changes, cArray[i]);
         }
-        return changed;
+
+        final Object[] newChanges = Arrays.stream(collectionSearch).filter(value -> value >= 0)
+                                                                   .sorted()
+                                                                   .mapToObj(value -> changes[value])
+                                                                   .toArray();
+
+        changes = (E[]) newChanges;
+        size = newChanges.length;
+        return true;
     }
 
     @Override
     public void clear() {
+        changes = (E[]) new Object[0];
         size = 0;
-        start = 0;
-        changes.clear();
-    }
-
-    public E get(final int index) {
-        return (E) changes.get(index);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return switch (o) {
-            case ListChange<?> l -> {
-                final boolean sameChanges = compareChanges(l, this);
-                final boolean sameStart = l.start == this.start;
-                final boolean sameSize = l.size == this.size;
-                yield sameChanges && sameStart && sameSize;
-            }
-            default -> false;
-        };
-    }
-
-    private boolean compareChanges(final ListChange<?> a, final ListChange<?> b) {
-        return Arrays.equals(a.changes.keySet().toArray(), b.changes.keySet().toArray()) &&
-               Arrays.equals(a.changes.values().toArray(), b.changes.values().toArray());
-    }
-
-    @Override
-    public int hashCode() {
-        return changes.hashCode() * Integer.hashCode(start) * Integer.hashCode(size);
     }
 
     @Override
     public String toString() {
-        return changes.values().toString();
+        return Arrays.toString(changes);
+    }
+*/
+
+    // ====================================
+    //               FIELDS
+    // ====================================
+
+    private final E[] changes;
+    private final int startIndex;
+    private final int size;
+
+    // ====================================
+    //             CONSTRUCTOR
+    // ====================================
+
+    public ListChange() {
+        this.changes = (E[]) new Object[0];
+        this.startIndex = 0;
+        this.size = 0;
+    }
+
+    private ListChange(final E[] changes, final int startIndex, final int size) {
+        this.changes = changes;
+        this.startIndex = startIndex;
+        this.size = size;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return Arrays.binarySearch(changes, o) >= 0;
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return new Itr();
+    }
+
+    private class Itr implements Iterator<E> {
+
+        private int cursor;
+
+        @Override
+        public boolean hasNext() {
+            return cursor < changes.length;
+        }
+
+        @Override
+        public E next() {
+            return changes[cursor++];
+        }
+    }
+
+    @Override
+    public E[] toArray() {
+        return changes;
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return null;
+    }
+
+    @Override
+    public ListChange<E> add(E e) {
+        if (size == Integer.MAX_VALUE)
+            throw new ArrayStoreException("Impossible to add new changes, Integer Max Value reached");
+
+        final int length = changes.length;
+
+        final E[] newChanges = (E[]) new Object[length + 1];
+        System.arraycopy(changes, 0, newChanges, 0, length);
+        newChanges[length] = e;
+
+        return new ListChange<>(newChanges, startIndex, size + 1);
+    }
+
+    @Override
+    public ListChange<E> addAll(Collection<? extends E> c) {
+        if (size + c.size() >= Integer.MAX_VALUE)
+            throw new ArrayStoreException("Impossible to add new changes, Integer Max Value reached");
+
+        final int length = changes.length;
+
+        final E[] newChanges = (E[]) new Object[length + c.size()];
+        final E[] cArray = (E[]) c.toArray();
+
+        System.arraycopy(changes, 0, newChanges, 0, length);
+        System.arraycopy(cArray, 0, newChanges, length, cArray.length);
+
+        return new ListChange<>(newChanges, startIndex, size + c.size());
+    }
+
+    @Override
+    public ListChange<E> remove(Object o) {
+        final int deletionIndex = Arrays.binarySearch(changes, o);
+        if (deletionIndex < 0) return this;
+
+        final int length = changes.length;
+
+        final E[] newChanges = (E[]) new Object[length - 1];
+        if (deletionIndex != 0)
+            System.arraycopy(changes, 0, newChanges, 0, deletionIndex);
+        if (deletionIndex != length - 1)
+            System.arraycopy(changes, deletionIndex + 1, newChanges, deletionIndex, length - 1 - deletionIndex);
+
+        return new ListChange<>(newChanges, startIndex, size - 1);
+    }
+
+    @Override
+    public ListChange<E> removeAll(Collection<?> c) {
+        final int[] collectionSearch = new int[c.size()];
+        final Object[] cArray = c.toArray();
+        for (int i = 0; i < c.size(); i++) {
+            collectionSearch[i] = Arrays.binarySearch(changes, cArray[i]);
+        }
+
+        final int[] deletionIndexes = Arrays.stream(collectionSearch).filter(value -> value >= 0).sorted().toArray();
+        final int deletionCount = deletionIndexes.length;
+        final int newLength = changes.length - deletionCount;
+        final E[] newChanges = (E[]) new Object[newLength];
+
+        int lastDeletion = -1;
+        int index = 0;
+        for (int deletionIndex : deletionIndexes) {
+            final int from = lastDeletion + 1;
+            final int length = deletionIndex - (lastDeletion + 1);
+            lastDeletion = deletionIndex;
+            System.arraycopy(changes, from, newChanges, index, length);
+            index += length;
+        }
+
+        return new ListChange<>(newChanges, startIndex, size + newChanges.length);
+    }
+
+    @Override
+    public ImmutableCollection<E> removeIf(Predicate<? super E> filter) {
+        return null;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        for (Object o : c) {
+            if (!contains(o)) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public ListChange<E> retainAll(Collection<?> c) {
+        if (c.size() == 0) return this;
+
+        final int[] collectionSearch = new int[c.size()];
+        final Object[] cArray = c.toArray();
+        for (int i = 0; i < c.size(); i++) {
+            collectionSearch[i] = Arrays.binarySearch(changes, cArray[i]);
+        }
+
+        final Object[] newChanges = Arrays.stream(collectionSearch).filter(value -> value >= 0)
+                .sorted()
+                .mapToObj(value -> changes[value])
+                .toArray();
+
+        return new ListChange<>((E[]) newChanges, startIndex, size - changes.length + newChanges.length);
+    }
+
+    @Override
+    public ListChange<E> clear() {
+        return new ListChange<>((E[]) new Object[0], startIndex, size - changes.length);
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(changes);
     }
 }
