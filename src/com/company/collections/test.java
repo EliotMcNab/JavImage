@@ -1,41 +1,36 @@
 package com.company.collections;
 
+import com.company.collections.changes.ArrayRemove;
+import com.company.utilities.ArrayUtil;
+
+import java.lang.module.FindException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 public class test {
     public static void main(String[] args) {
+        final Integer[] testArray = new Integer[2_000_000];
+        for (int i = 0; i < 2_000_000; i++) {
+            testArray[i] = i;
+        }
+        
+        final ArrayList<Integer> toRemove = new ArrayList<>(1_000);
+        final Random random = new Random();
+        for (int i = 0; i < 1_000; i++) {
+            toRemove.add(random.nextInt(2_000_000));
+        }
+        final ArrayRemove<Integer> arrayRemove1 = new ArrayRemove<>(toRemove);
+
+        /*final long start = System.currentTimeMillis();
+        arrayRemove1.applyTo(testArray);
+        System.out.println(System.currentTimeMillis() - start);*/
+
+        final ArrayList<Integer> arrayList1 = new ArrayList<>(2_000_000);
+        arrayList1.addAll(Arrays.asList(testArray));
+
         final long start = System.currentTimeMillis();
-        /*final ListChange<Integer> listChange1 = new ListChange<>();
-        listChange1.add(0);
-        System.out.println(listChange1);
-        System.out.println(listChange1.size());
-        listChange1.addAll(Arrays.asList(1, 2, 3, 4, 5, 6));
-        for (Integer integer : listChange1) {
-            System.out.println(integer);
-        }
-        System.out.println(listChange1);
-        System.out.println(listChange1.size());
-        listChange1.remove(6);
-        System.out.println(listChange1);
-        System.out.println(listChange1.size());
-        listChange1.removeAll(Arrays.asList(1, 5));
-        System.out.println(listChange1);
-        System.out.println(listChange1.size());
-        listChange1.retainAll(Arrays.asList(2, 4));
-        System.out.println(listChange1);
-        System.out.println(listChange1.size());
-        listChange1.clear();
-        System.out.println(listChange1);
-        System.out.println(listChange1.size());*/
-
-        final ListChange<Integer> listChange = new ListChange<>();
-        ArrayList<Integer> arrayList = new ArrayList<>(2_073_600);
-        for (int i = 0; i < 2_073_600; i++) {
-            arrayList.add(i);
-        }
-        listChange.addAll(arrayList);
-
+        arrayList1.removeAll(toRemove);
         System.out.println(System.currentTimeMillis() - start);
     }
 }

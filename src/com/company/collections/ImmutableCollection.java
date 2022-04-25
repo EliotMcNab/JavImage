@@ -6,14 +6,12 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-interface ImmutableCollection<E> extends Iterable<E> {
+public interface ImmutableCollection<E> extends Iterable<E> {
     int size();
 
     boolean isEmpty();
 
     boolean contains(Object o);
-
-    Iterator<E> iterator();
 
     Object[] toArray();
 
