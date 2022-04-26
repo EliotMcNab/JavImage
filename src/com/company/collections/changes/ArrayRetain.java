@@ -1,5 +1,7 @@
 package com.company.collections.changes;
 
+import com.company.utilities.ArrayUtil;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -39,8 +41,13 @@ public class ArrayRetain<E> extends ArrayChange<E> {
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array) {
-        return null;
+    public E[] applyTo(E[] array, Class<E> clazz) {
+        return (E[]) Arrays.stream(ArrayUtil.quickFind(array, toRetain))
+                           .filter(value -> value >= 0)
+                           .sorted()
+                           .distinct()
+                           .mapToObj(value -> array[value])
+                           .toArray();
     }
 
     // ====================================

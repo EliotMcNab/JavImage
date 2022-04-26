@@ -1,5 +1,6 @@
 package com.company.collections.changes;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -48,8 +49,12 @@ public class ArrayAdd<E> extends ArrayChange<E> {
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array) {
-        return null;
+    public E[] applyTo(E[] array, Class<E> clazz) {
+        final E[] result = (E[]) Array.newInstance(clazz, array.length + toAdd.length);
+        System.arraycopy(array, 0, result, 0, array.length);
+        System.arraycopy(toAdd, 0, result, array.length, toAdd.length);
+
+        return result;
     }
 
     // ====================================

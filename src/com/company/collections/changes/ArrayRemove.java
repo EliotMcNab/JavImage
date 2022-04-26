@@ -4,6 +4,7 @@ import com.company.utilities.ArrayUtil;
 import com.sun.security.jgss.GSSUtil;
 
 import javax.management.ObjectName;
+import java.lang.reflect.Array;
 import java.security.spec.RSAOtherPrimeInfo;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,19 +66,19 @@ public class ArrayRemove<E> extends ArrayChange<E> {
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array) {
-        if (size == 1) return simpleRemove(array);
-        else           return fastRemove(array);
+    public E[] applyTo(E[] array, Class<E> clazz) {
+        if (size == 1) return simpleRemove(array, clazz);
+        else           return fastRemove(array, clazz);
     }
 
-    private E[] simpleRemove(E[] array) {
+    private E[] simpleRemove(E[] array, final Class<E> clazz) {
         // determines the index of the element to remove
         final int index = ArrayUtil.quickFind(array, toRemove[0]);
         // if element is not in array return a copy of the original array
         if (index == -1) return Arrays.copyOf(array, array.length);
 
         // copies all  values in original array except for removed value
-        final E[] result = (E[]) new Object[array.length - 1];
+        final E[] result = (E[]) Array.newInstance(clazz, array.length - 1);
         if (index != 0) System.arraycopy(array, 0, result, 0, index);
         System.arraycopy(array, index + 1, result, index, array.length - index - 1);
 
@@ -85,20 +86,19 @@ public class ArrayRemove<E> extends ArrayChange<E> {
         return result;
     }
 
-    private E[] fastRemove(E[] array) {
+    private E[] fastRemove(E[] array, final Class<E> clazz) {
         // determines the index of every element to remove
-        final int[] searchIndexes = ArrayUtil.quickFind(array, toRemove);
+        final int[] searchIndexes = ArrayUtil.quickFindAll(array, toRemove);
 
         // filters out elements which are not contained in the array
         // ignoring duplicate elements
         final int[] containedIndex = Arrays.stream(searchIndexes)
-                                           .parallel()
                                            .filter(value -> value >= 0)
                                            .sorted()
                                            .distinct()
                                            .toArray();
 
-        final E[] result = (E[]) new Object[array.length - containedIndex.length];
+        final E[] result = (E[]) Array.newInstance(clazz, array.length - containedIndex.length);
         int lastRemove = 0;
         int lastIndex = 0;
 

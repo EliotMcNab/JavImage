@@ -88,9 +88,9 @@ public abstract class ArrayChange<E> implements ImmutableCollection<E> {
     //              APPLYING
     // ====================================
 
-    public abstract E[] applyTo(E[] array);
+    public abstract E[] applyTo(E[] array, Class<E> clazz);
 
-    protected E[] resolve(E[] array) {
+    protected E[] resolve(E[] array, Class<E> clazz) {
         // TODO: optimise this shit by merging succesive similar changes
         final ArrayChange<E>[] changes = new ArrayChange[generation];
 
@@ -105,7 +105,7 @@ public abstract class ArrayChange<E> implements ImmutableCollection<E> {
 
         E[] result = array;
         for (int i = 0; i < necessaryDepth; i++) {
-             result = changes[i].applyTo(array);
+             result = changes[i].applyTo(array, clazz);
         }
 
         return result;

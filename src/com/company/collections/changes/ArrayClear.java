@@ -1,5 +1,6 @@
 package com.company.collections.changes;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -26,8 +27,8 @@ public class ArrayClear<E> extends ArrayChange<E> {
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array) {
-        return (E[]) new Object[0];
+    public E[] applyTo(E[] array, Class<E> clazz) {
+        return (E[]) Array.newInstance(clazz, 0);
     }
 
     // ====================================
