@@ -2,6 +2,7 @@ package com.company.collections.changes;
 
 import com.company.utilities.ArrayUtil;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -42,12 +43,20 @@ public class ArrayRetain<E> extends ArrayChange<E> {
 
     @Override
     public E[] applyTo(E[] array, Class<E> clazz) {
-        return (E[]) Arrays.stream(ArrayUtil.quickFind(array, toRetain))
-                           .filter(value -> value >= 0)
-                           .sorted()
-                           .distinct()
-                           .mapToObj(value -> array[value])
-                           .toArray();
+        // creates an array with all the values to be retained
+        final Object[] retained = Arrays.stream(ArrayUtil.quickFindAll(array, toRetain))
+                                        .filter(value -> value >= 0)
+                                        .sorted()
+                                        .distinct()
+                                        .mapToObj(value -> array[value])
+                                        .toArray();
+
+        // creates a new array of the correct type and copies the values to be retained there
+        final E[] result = (E[]) Array.newInstance(clazz, retained.length);
+        System.arraycopy((E[]) retained, 0, result, 0, retained.length);
+
+        // returns the final result with the correct class associated to it
+        return result;
     }
 
     // ====================================

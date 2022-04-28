@@ -88,6 +88,9 @@ public abstract class ArrayChange<E> implements ImmutableCollection<E> {
     //              APPLYING
     // ====================================
 
+    public final E[] applyTo(Collection<E> c, Class<E> clazz) {
+        return applyTo((E[]) c.toArray(), clazz);
+    }
     public abstract E[] applyTo(E[] array, Class<E> clazz);
 
     protected E[] resolve(E[] array, Class<E> clazz) {

@@ -1,17 +1,22 @@
 package com.company.collections.changes;
 
 import com.company.utilities.ArrayUtil;
-import com.sun.security.jgss.GSSUtil;
+import org.jetbrains.annotations.NotNull;
 
-import javax.management.ObjectName;
 import java.lang.reflect.Array;
-import java.security.spec.RSAOtherPrimeInfo;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class ArrayRemove<E> extends ArrayChange<E> {
+
+    // ====================================
+    //               FIELDS
+    // ====================================
+
+    public static final int BIG_THRESHOLD = 700;
 
     // ====================================
     //             CONSTRUCTOR
@@ -67,11 +72,11 @@ public class ArrayRemove<E> extends ArrayChange<E> {
 
     @Override
     public E[] applyTo(E[] array, Class<E> clazz) {
-        if (size == 1) return simpleRemove(array, clazz);
-        else           return fastRemove(array, clazz);
+        if (size == 1) return singleRemove(array, clazz);
+        else           return multipleRemove(array, clazz);
     }
 
-    private E[] simpleRemove(E[] array, final Class<E> clazz) {
+    private E[] singleRemove(E[] array, final Class<E> clazz) {
         // determines the index of the element to remove
         final int index = ArrayUtil.quickFind(array, toRemove[0]);
         // if element is not in array return a copy of the original array
@@ -86,17 +91,33 @@ public class ArrayRemove<E> extends ArrayChange<E> {
         return result;
     }
 
-    private E[] fastRemove(E[] array, final Class<E> clazz) {
+    public boolean isBigChange(final E[] array) {
+        return toRemove.length > BIG_THRESHOLD;
+    }
+
+    private E[] multipleRemove(@NotNull E[] array, @NotNull final Class<E> clazz) {
+        Objects.requireNonNull(array);
+        Objects.requireNonNull(clazz);
+
+        if (isBigChange(array)) return bigRemove(array, clazz);
+        else                    return smallRemove(array, clazz);
+    }
+
+    private E[] smallRemove(E[] array, Class<E> clazz) {
+        return ArrayUtil.batchRemove(array, clazz, Arrays.asList(toRemove));
+    }
+
+    private E[] bigRemove(E[] array, final Class<E> clazz) {
         // determines the index of every element to remove
         final int[] searchIndexes = ArrayUtil.quickFindAll(array, toRemove);
 
         // filters out elements which are not contained in the array
         // ignoring duplicate elements
         final int[] containedIndex = Arrays.stream(searchIndexes)
-                                           .filter(value -> value >= 0)
-                                           .sorted()
-                                           .distinct()
-                                           .toArray();
+                .filter(value -> value >= 0)
+                .sorted()
+                .distinct()
+                .toArray();
 
         final E[] result = (E[]) Array.newInstance(clazz, array.length - containedIndex.length);
         int lastRemove = 0;
@@ -121,6 +142,7 @@ public class ArrayRemove<E> extends ArrayChange<E> {
 
         // returns the final resulting array
         return result;
+
     }
 
     // ====================================
