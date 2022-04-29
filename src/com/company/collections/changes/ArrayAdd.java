@@ -4,9 +4,8 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.function.Predicate;
 
-public class ArrayAdd<E> extends ArrayChange<E> {
+public class ArrayAdd<E> extends Change<E> {
 
     // ====================================
     //             CONSTRUCTOR
@@ -16,7 +15,7 @@ public class ArrayAdd<E> extends ArrayChange<E> {
         this(toAdd, null);
     }
 
-    protected ArrayAdd(final E toAdd, final ArrayChange<E> parent) {
+    protected ArrayAdd(final E toAdd, final Change<E> parent) {
         this((E[]) new Object[]{toAdd}, parent);
     }
 
@@ -24,7 +23,7 @@ public class ArrayAdd<E> extends ArrayChange<E> {
         this((E[]) c.toArray());
     }
 
-    protected ArrayAdd(final Collection<? extends E> c, final ArrayChange<E> parent) {
+    protected ArrayAdd(final Collection<? extends E> c, final Change<E> parent) {
         this((E[]) c.toArray(), parent);
     }
 
@@ -32,28 +31,38 @@ public class ArrayAdd<E> extends ArrayChange<E> {
         this(toAdd, null);
     }
 
-    protected ArrayAdd(final E[] toAdd, final ArrayChange<E> parent) {
+    protected ArrayAdd(final E[] toAdd, final Change<E> parent) {
         super(
-                parent == null ? 0 : parent.getGeneration(),
+                parent == null ? 0 : parent.getGeneration() + 1,
                 toAdd.length,
                 parent,
                 toAdd,
                 null,
                 null,
-                null
+                null,
+                parent == null ? null : parent.array
         );
     }
+
+    // ====================================
+    //             ACCESSORS
+    // ====================================
+
+    @Override
+    public E[] getChanges() {
+        return toAdd;
+    }
+
 
     // ====================================
     //          APPLYING CHANGES
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array, Class<E> clazz) {
+    protected E[] applyToImpl(E[] array, Class<E> clazz) {
         final E[] result = (E[]) Array.newInstance(clazz, array.length + toAdd.length);
         System.arraycopy(array, 0, result, 0, array.length);
         System.arraycopy(toAdd, 0, result, array.length, toAdd.length);
-
         return result;
     }
 
@@ -104,11 +113,6 @@ public class ArrayAdd<E> extends ArrayChange<E> {
     // ====================================
     //          ARRAY CONVERSION
     // ====================================
-
-    @Override
-    public Object[] toArray() {
-        return Arrays.copyOf(toAdd, toAdd.length);
-    }
 
     @Override
     public String toString() {

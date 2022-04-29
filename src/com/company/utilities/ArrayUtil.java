@@ -1,5 +1,6 @@
 package com.company.utilities;
 
+import com.company.collections.changes.*;
 import com.company.utilities.comparators.ArrayElementComparator;
 import com.company.utilities.comparators.ObjectComparator;
 import org.jetbrains.annotations.Contract;
@@ -7,8 +8,21 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.CyclicBarrier;
 
 public class ArrayUtil {
+
+    public static int determineTotalLength(final Object[][] array) {
+        // TODO: make this work for n-dimentional arrays
+        int length = 0;
+
+        for (Object[] objects : array) {
+            length += objects.length;
+        }
+
+        return length;
+    }
+
     @Contract(mutates = "param1")
     public static void swap(Object[] array, final int a, final int b) {
         final Object temp = array[a];
@@ -187,7 +201,7 @@ public class ArrayUtil {
         final ObjectComparator comparator = new ObjectComparator();
 
         // sorts out duplicate values to find
-        final Object[] blindUniqueToFind = retainDistinctImpl(toFind, comparator);
+        final Object[] uniqueToFind = retainDistinctImpl(toFind, comparator);
 
         // builds the search array
         final Object[][] a = new Object[][]{{Integer.MIN_VALUE, -1}};
@@ -200,7 +214,7 @@ public class ArrayUtil {
         // counter variables for the loop*
         int i, j, k;
         i = searchArray.length;
-        j = blindUniqueToFind.length - 1;
+        j = uniqueToFind.length - 1;
         k = 0;
 
         // stores all found indexes
@@ -210,7 +224,7 @@ public class ArrayUtil {
         while (j >= 0) {
             // compares the current value to the previous element in the array
             final var val = searchArray[--i];
-            final var search = blindUniqueToFind[j];
+            final var search = uniqueToFind[j];
             // if the previous element in the array is superior or equal to the value we are checking for,
             // then it might be a valid match
             final boolean superiorOrEqual = comparator.compare(val[0], search) >= 0;
@@ -298,7 +312,13 @@ public class ArrayUtil {
     ) {
         final E[] blindResult = (E[]) Array.newInstance(clazz, array.length);
 
-        int i = 0, k = 0;
+        int i = -1, k;
+        while (c.contains(array[k = ++i]) == retain) {
+            if (i == array.length) return blindResult;
+        }
+
+        System.arraycopy(array, 0, blindResult, 0, k);
+
         while (++i < array.length) {
             if (c.contains(array[i]) == retain) blindResult[k++] = array[i];
         }
@@ -307,12 +327,14 @@ public class ArrayUtil {
     }
 
     public static void main(String[] args) {
-        final Integer[] array = new Integer[]{12, 1, 3, 5, 4, 3, 0, 12};
-        final Integer[] toFind = new Integer[]{12, 0};
+        final ArrayRemove<Integer> remove = new ArrayRemove<>(Arrays.asList(4, 8, 1, 9));
+        final Integer[] array = new Integer[]{4, 8, 0, 18, 9, 7, 5};
+        System.out.println(Arrays.toString(remove.add(12).add(10).applyTo(array)));
 
-        final long start = System.currentTimeMillis();
-        System.out.println(Arrays.toString(retainDistinct(array)));
-        final long stop = System.currentTimeMillis();
-        System.out.println(stop - start);
+        Change.of(4, 8, 0, 18, 9, 7, 5)
+              .removeAll(4, 8, 0, 18, 9, 7, 5)
+              .add(12)
+              .add(10)
+              .toArray();
     }
 }

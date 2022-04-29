@@ -4,7 +4,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class ArrayClear<E> extends ArrayChange<E> {
+public class ArrayClear<E> extends Change<E> {
 
     // ====================================
     //             CONSTRUCTOR
@@ -18,18 +18,30 @@ public class ArrayClear<E> extends ArrayChange<E> {
                 null,
                 null,
                 null,
+                null,
                 null
         );
     }
+
+    // ====================================
+    //             ACCESSORS
+    // ====================================
+
+    @Override
+    public Object[] getChanges() {
+        return new Object[0];
+    }
+
 
     // ====================================
     //          APPLYING CHANGES
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array, Class<E> clazz) {
+    protected E[] applyToImpl(E[] array, Class<E> clazz) {
         return (E[]) Array.newInstance(clazz, 0);
     }
+
 
     // ====================================
     //             CONTENTS
@@ -69,11 +81,6 @@ public class ArrayClear<E> extends ArrayChange<E> {
     // ====================================
     //          ARRAY CONVERSION
     // ====================================
-
-    @Override
-    public Object[] toArray() {
-        return new Object[0];
-    }
 
     @Override
     public String toString() {

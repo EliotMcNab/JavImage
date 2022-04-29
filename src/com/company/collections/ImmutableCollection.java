@@ -33,7 +33,11 @@ public interface ImmutableCollection<E> extends Iterable<E> {
 
     ImmutableCollection<E> removeIf(Predicate<? super E> filter);
 
+    ImmutableCollection<E> retain(Object o);
+
     ImmutableCollection<E> retainAll(Collection<?> c);
+
+    ImmutableCollection<E> retainAll(Object... o);
 
     ImmutableCollection<E> clear();
 

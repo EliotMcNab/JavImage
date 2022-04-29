@@ -61,7 +61,17 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
     }
 
     @Override
+    public ImmutableCollection<E> retain(Object o) {
+        return null;
+    }
+
+    @Override
     public ImmutableCollection<E> retainAll(Collection<?> c) {
+        return null;
+    }
+
+    @Override
+    public ImmutableCollection<E> retainAll(Object... o) {
         return null;
     }
 
@@ -81,7 +91,7 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
 
     private final int generation;
     private final ImmutableList<E> parent;
-    private final ArrayChange<E> change;
+    private final Change<E> change;
     private final int size;
 
     // ====================================
@@ -91,24 +101,24 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
     public ImmutableList() {
         generation = 0;
         parent = null;
-        change = new ArrayChange<>();
+        change = new Change<>();
         size = 0;
     }
 
     public ImmutableList(final Collection<? extends E> c) {
         generation = 0;
         parent = null;
-        change = new ArrayChange<>(c);
+        change = new Change<>(c);
         size = c.size();
     }
 
-    private ImmutableList(final ArrayChange<E> change) {
+    private ImmutableList(final Change<E> change) {
         this.generation = 0;
         this.parent = null;
         this.change = change;
         this.size = change.size();
     }
-    private ImmutableList(final ImmutableList<E> parent, final ArrayChange<E> change) {
+    private ImmutableList(final ImmutableList<E> parent, final Change<E> change) {
         this.generation = parent.generation + 1;
         this.parent = parent;
         this.change = change;
@@ -189,7 +199,7 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
     }
 
     public ImmutableList<E> applyChanges() {
-        ArrayChange<E> newChange = this.change;
+        Change<E> newChange = this.change;
         ImmutableList<E> parent = this;
         for (int i = 0; i < generation; i++) {
             parent = parent.parent;
@@ -200,17 +210,17 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
 
     @Override
     public ImmutableList<E> add(E e) {
-        return new ImmutableList<>(this, new ArrayChange<>(e).setStart(change.size()));
+        return new ImmutableList<>(this, new Change<>(e).setStart(change.size()));
     }
 
     @Override
     public ImmutableList<E> addAll(Collection<? extends E> c) {
-        return new ImmutableList<>(this, new ArrayChange<E>(c).setStart(change.size()));
+        return new ImmutableList<>(this, new Change<E>(c).setStart(change.size()));
     }
 
     @Override
     public ImmutableList<E> remove(Object o) {
-        final ArrayChange<E> newChange = applyChanges().change.remove(o);
+        final Change<E> newChange = applyChanges().change.remove(o);
         return new ImmutableList<>(this, newChange);
     }
 
@@ -222,13 +232,13 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
 
     @Override
     public ImmutableList<E> removeIf(Predicate<? super E> filter) {
-        // TODO: needs implementation in ArrayChange class
+        // TODO: needs implementation in Change class
         return null;
     }
 
     @Override
     public ImmutableList<E> retainAll(Collection<?> c) {
-        final ArrayChange<E> newChange = applyChanges().change.retainAll(c);
+        final Change<E> newChange = applyChanges().change.retainAll(c);
         return new ImmutableList<>(this, newChange);
     }
 
@@ -240,7 +250,7 @@ public class ImmutableList<E> implements ImmutableCollection<E> {
 
     @Override
     public ImmutableList<E> clear() {
-        return new ImmutableList<>(new ArrayChange<>());
+        return new ImmutableList<>(new Change<>());
     }
 
     @Override

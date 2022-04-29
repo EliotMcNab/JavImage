@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class ArrayRetain<E> extends ArrayChange<E> {
+public class ArrayRetain<E> extends Change<E> {
 
     // ====================================
     //             CONSTRUCTOR
@@ -17,7 +17,7 @@ public class ArrayRetain<E> extends ArrayChange<E> {
         this(c.toArray());
     }
 
-    protected ArrayRetain(final Collection<?> c, final ArrayChange<E> parent) {
+    protected ArrayRetain(final Collection<?> c, final Change<E> parent) {
         this(c.toArray(), parent);
     }
 
@@ -25,16 +25,26 @@ public class ArrayRetain<E> extends ArrayChange<E> {
         this(toRetain, null);
     }
 
-    protected ArrayRetain(final Object[] toRetain, final ArrayChange<E> parent) {
+    protected ArrayRetain(final Object[] toRetain, final Change<E> parent) {
         super(
-                parent == null ? 0 : parent.getGeneration(),
+                parent == null ? 0 : parent.getGeneration() + 1,
                 toRetain.length,
                 parent,
                 null,
                 null,
                 null,
-                toRetain
+                toRetain,
+                parent == null ? null : parent.array
         );
+    }
+
+    // ====================================
+    //             ACCESSORS
+    // ====================================
+
+    @Override
+    public Object[] getChanges() {
+        return toRetain;
     }
 
     // ====================================
@@ -42,14 +52,15 @@ public class ArrayRetain<E> extends ArrayChange<E> {
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array, Class<E> clazz) {
+    protected E[] applyToImpl(E[] array, Class<E> clazz) {
+        // TODO: update this shit to match optimised algorithms in ArrayRemove
         // creates an array with all the values to be retained
         final Object[] retained = Arrays.stream(ArrayUtil.quickFindAll(array, toRetain))
-                                        .filter(value -> value >= 0)
-                                        .sorted()
-                                        .distinct()
-                                        .mapToObj(value -> array[value])
-                                        .toArray();
+                .filter(value -> value >= 0)
+                .sorted()
+                .distinct()
+                .mapToObj(value -> array[value])
+                .toArray();
 
         // creates a new array of the correct type and copies the values to be retained there
         final E[] result = (E[]) Array.newInstance(clazz, retained.length);
@@ -100,11 +111,6 @@ public class ArrayRetain<E> extends ArrayChange<E> {
     // ====================================
     //          ARRAY CONVERSION
     // ====================================
-
-    @Override
-    public Object[] toArray() {
-        return Arrays.copyOf(toRetain, toRetain.length);
-    }
 
     @Override
     public String toString() {

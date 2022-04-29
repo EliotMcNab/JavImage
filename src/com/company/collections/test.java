@@ -16,7 +16,7 @@ public class test {
             array[i] = random.nextInt(MAX_VALUE);
         }
         
-        final Integer[] toRemove = new Integer[10_000];
+        final Integer[] toRemove = new Integer[10];
         for (int i = 0; i < toRemove.length; i++) {
             toRemove[i] = random.nextInt(MAX_VALUE);
         }
@@ -25,7 +25,7 @@ public class test {
         final ArrayList<Integer> arrayList1 = new ArrayList<>(array.length);
 
         final long changeStart = System.currentTimeMillis();
-        final Integer[] removed = arrayRemove1.applyTo(array, Integer.class);
+        final Integer[] removed = arrayRemove1.applyTo(array);
         final long changeStop = System.currentTimeMillis();
 
         arrayList1.addAll(Arrays.asList(array));
@@ -44,12 +44,12 @@ public class test {
 
         System.out.println(">> SIZE DISCREPANCIES");
         System.out.println(sizeError ? "YES" : "NONE");
-        System.out.println("ArrayChange: " + removed.length);
+        System.out.println("Change: " + removed.length);
         System.out.println("ArrayList  : " + arrayList1.size());
         System.out.println(">> REMOVAL DISCREPANCIES");
         System.out.println(removalError ? "YES" : "NONE");
         System.out.println(">> ALGORITHM DURATION");
-        System.out.println("ArrayChange: " + (changeStop - changeStart) + "ms");
+        System.out.println("Change: " + (changeStop - changeStart) + "ms");
         System.out.println("ArrayList  : " + (arrayStop - arrayStart) + "ms");
 
         // endregion

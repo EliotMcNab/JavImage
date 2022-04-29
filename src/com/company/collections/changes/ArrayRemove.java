@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-public class ArrayRemove<E> extends ArrayChange<E> {
+public class ArrayRemove<E> extends Change<E> {
 
     // ====================================
     //               FIELDS
@@ -22,15 +22,15 @@ public class ArrayRemove<E> extends ArrayChange<E> {
     //             CONSTRUCTOR
     // ====================================
 
-    public ArrayRemove(final Collection<? extends E> c) {
+    public ArrayRemove(final Collection<?> c) {
         this(c.toArray(), null);
     }
 
-    protected ArrayRemove(final Object toRemove, final ArrayChange<E> parent) {
+    protected ArrayRemove(final Object toRemove, final Change<E> parent) {
         this(new Object[]{toRemove}, parent);
     }
 
-    protected ArrayRemove(final Collection<? extends E> c, final ArrayChange<E> parent) {
+    protected ArrayRemove(final Collection<? extends E> c, final Change<E> parent) {
         this(c.toArray(), parent);
     }
 
@@ -38,15 +38,16 @@ public class ArrayRemove<E> extends ArrayChange<E> {
         this(toRemove, null);
     }
 
-    protected ArrayRemove(final Object[] toRemove, final ArrayChange<E> parent) {
+    protected ArrayRemove(final Object[] toRemove, final Change<E> parent) {
         super(
-                parent == null ? 0 : parent.getGeneration(),
+                parent == null ? 0 : parent.getGeneration() + 1,
                 toRemove.length,
                 parent,
                 null,
                 toRemove,
                 null,
-                null
+                null,
+                parent == null ? null : parent.array
         );
     }
 
@@ -54,7 +55,7 @@ public class ArrayRemove<E> extends ArrayChange<E> {
         this(filter, null);
     }
 
-    protected ArrayRemove(final Predicate<? super E> filter, final ArrayChange<E> parent) {
+    protected ArrayRemove(final Predicate<? super E> filter, final Change<E> parent) {
         super(
                 parent == null ? 0 : parent.getGeneration(),
                 0,
@@ -62,16 +63,27 @@ public class ArrayRemove<E> extends ArrayChange<E> {
                 null,
                 null,
                 filter,
-                null
+                null,
+                parent == null ? null : parent.array
         );
     }
+
+    // ====================================
+    //             ACCESSORS
+    // ====================================
+
+    @Override
+    public Object[] getChanges() {
+        return toRemove;
+    }
+
 
     // ====================================
     //          APPLYING CHANGES
     // ====================================
 
     @Override
-    public E[] applyTo(E[] array, Class<E> clazz) {
+    protected E[] applyToImpl(E[] array, Class<E> clazz) {
         if (size == 1) return singleRemove(array, clazz);
         else           return multipleRemove(array, clazz);
     }
@@ -192,11 +204,6 @@ public class ArrayRemove<E> extends ArrayChange<E> {
     // ====================================
     //          ARRAY CONVERSION
     // ====================================
-
-    @Override
-    public Object[] toArray() {
-        return Arrays.copyOf(toRemove, toRemove.length);
-    }
 
     @Override
     public String toString() {
