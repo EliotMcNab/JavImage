@@ -1,8 +1,10 @@
 package com.company.collections.changes;
 
-public class SequentialRetain<E> extends ArrayRetain<E> {
+import com.company.collections.changes.retain.RetainFirst;
 
-    public SequentialRetain(
+public class SequentialRetain<E> /*extends RetainFirst<E>*/ {
+
+    /*public SequentialRetain(
             final Change<E>... changes
     ) {
         super(optimiseRetain(changes));
@@ -31,6 +33,6 @@ public class SequentialRetain<E> extends ArrayRetain<E> {
         }
 
         return result;
-    }
+    }*/
 
 }

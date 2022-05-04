@@ -1,6 +1,16 @@
 package com.company.collections.changes;
 
 import com.company.collections.ImmutableCollection;
+import com.company.collections.InaccessibleValueException;
+import com.company.collections.changes.add.Add;
+import com.company.collections.changes.clear.Clear;
+import com.company.collections.changes.remove.RemoveIf;
+import com.company.collections.changes.remove.RemoveFirst;
+import com.company.collections.changes.remove.RemoveAll;
+import com.company.collections.changes.retain.RetainAll;
+import com.company.collections.changes.retain.RetainIf;
+import com.company.collections.changes.retain.RetainFirst;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -12,12 +22,8 @@ public abstract class Change<E> implements ImmutableCollection<E> {
     //               FIELDS
     // ====================================
 
-    protected final int size;
-    protected final Change<E> parent;
-    protected final E[] toAdd;
-    protected final Object[] toRemove;
-    protected final Predicate<? super E> filter;
-    protected final Object[] toRetain;
+    protected final Class<E> clazz;
+    private final Change<E> parent;
     protected final E[] array;
     private final int generation;
 
@@ -25,59 +31,62 @@ public abstract class Change<E> implements ImmutableCollection<E> {
     //             CONSTRUCTOR
     // ====================================
 
-    protected Change(
-            final E[] array
+    public Change(
+            final Class<E> clazz
     ) {
-        this(
-                0,
-                array.length,
-                null,
-                null,
-                null,
-                null,
-                null,
-                array
-        );
+        this.clazz = clazz;
+        this.parent = null;
+        this.array = null;
+        this.generation = 0;
     }
 
-    protected Change(
-            final int generation,
-            final int size,
-            final Change<E> parent,
-            final E[] toAdd,
-            final Object[] toRemove,
-            final Predicate<? super E> filter,
-            final Object[] toRetain,
-            final E[] array
+    public Change(
+            final Class<E> clazz,
+            final Change<E> parent
     ) {
-        this.generation = generation;
-        this.size = size;
+        this.clazz = clazz;
         this.parent = parent;
-        this.toAdd = toAdd;
-        this.toRemove = toRemove;
-        this.filter = filter;
-        this.toRetain = toRetain;
-        this.array = array;
+        this.array = parent == null ? null : parent.array;
+        this.generation = parent == null ? 0 : parent.generation + 1;
     }
 
-    // ====================================
-    //             ACCESSORS
-    // ====================================
+    public Change(
+            final Class<E> clazz,
+            final Change<E> parent,
+            final E[] array
+    ) {
+        this.clazz = clazz;
+        this.parent = parent;
+        this.array = array;
+        this.generation = parent == null ? 0 : parent.generation + 1;
+    }
 
-    public abstract Object[] getChanges();
+    @SafeVarargs
+    public static <E> Origin<E> of(final E... elements) {
+        return new Origin<>((Class<E>) elements.getClass().componentType(), elements);
+    }
+
+    public static <E> Origin<E> of(final Class<E> clazz) {
+        return new Origin<>(clazz, (E[]) Array.newInstance(clazz, 0));
+    }
+
 
     // ====================================
     //               ADDING
     // ====================================
 
     @Override
-    public ArrayAdd<E> add(E e) {
-        return new ArrayAdd<>(e, this);
+    public Add<E> add(E e) {
+        return new Add<>(clazz, (E[]) new Object[]{e}, this);
+    }
+
+    public Add<E> addAll(E... elements) {
+        return new Add<>(clazz, elements, this);
     }
 
     @Override
-    public ArrayAdd<E> addAll(Collection<? extends E> c) {
-        return new ArrayAdd<>((E[]) c.toArray(), this);
+    public Add<E> addAll(Collection<? extends E> c) {
+        return new Add<>(clazz, c, this);
     }
 
     // ====================================
@@ -85,22 +94,26 @@ public abstract class Change<E> implements ImmutableCollection<E> {
     // ====================================
 
     @Override
-    public ArrayRemove<E> remove(Object o) {
-        return new ArrayRemove<>(o, this);
+    public RemoveFirst<E> removeFirst(Object o) {
+        return new RemoveFirst<>(clazz, new Object[]{o}, this);
     }
 
-    public final ArrayRemove<E> removeAll(E... e) {
-        return new ArrayRemove<>(e, this);
+    public RemoveFirst<E> removeFirst(Object... objects) {
+        return new RemoveFirst<>(clazz, objects, this);
+    }
+
+    public final RemoveAll<E> removeAll(E... e) {
+        return new RemoveAll<>(clazz, e, this);
     }
 
     @Override
-    public ArrayRemove<E> removeAll(Collection<?> c) {
-        return new ArrayRemove<>(c.toArray(), this);
+    public RemoveAll<E> removeAll(Collection<?> c) {
+        return new RemoveAll<>(clazz, c, this);
     }
 
     @Override
-    public ArrayRemove<E> removeIf(Predicate<? super E> filter) {
-        return new ArrayRemove<>(filter, this);
+    public RemoveIf<E> removeIf(Predicate<? super E> filter) {
+        return new RemoveIf<>(clazz, filter, this);
     }
 
     // ====================================
@@ -108,40 +121,56 @@ public abstract class Change<E> implements ImmutableCollection<E> {
     // ====================================
 
     @Override
-    public ArrayRetain<E> retain(Object o) {
-        return new ArrayRetain<>(List.of(o));
+    public RetainFirst<E> retainFirst(Object o) {
+        return new RetainFirst<>(clazz, new Object[]{o}, this);
+    }
+
+    public RetainFirst<E> retainFirst(Object... objects) {
+        return new RetainFirst<>(clazz, objects, this);
     }
 
     @Override
-    public ArrayRetain<E> retainAll(Object... o) {
-        return new ArrayRetain<>(Arrays.asList(o));
+    public RetainAll<E> retainAll(Object... objects) {
+        return new RetainAll<>(clazz, objects, this);
     }
 
     @Override
-    public ArrayRetain<E> retainAll(Collection<?> c) {
-        return new ArrayRetain<>(c, this);
+    public RetainAll<E> retainAll(Collection<?> c) {
+        return new RetainAll<>(clazz, c, this);
+    }
+
+    public RetainIf<E> retainIf(Predicate<? super E> filter) {
+        return new RetainIf<>(clazz, filter, this);
+    }
+
+    // ====================================
+    //              CLEARING
+    // ====================================
+
+    @Override
+    public Change<E> clear() {
+        return new Clear<>(clazz);
     }
 
     // ====================================
     //              APPLYING
     // ====================================
 
-    @SafeVarargs
-    public static <E> ArrayBase<E> of(E... e) {
-        return new ArrayBase<>(e);
-    }
+    protected abstract Change<E> toSequential(final Class<E> clazz, Change<E>[] changes);
 
-    public final E[] applyTo(Collection<E> c, Class<E> clazz) {
+    public final E[] applyTo(Collection<? extends E> c) {
         return applyTo((E[]) c.toArray());
     }
-    public final E[] applyTo(E[] array) {
-        if (getGeneration() == 0) return applyToImpl(array, (Class<E>) array[0].getClass());
-        else                      return resolve(array, (Class<E>) array[0].getClass());
+    public final E[] applyTo(@NotNull E[] array) {
+        Objects.requireNonNull(array);
+
+        if (getGeneration() == 0) return applyToImpl(array);
+        else                      return resolve(array);
     }
 
-    protected abstract E[] applyToImpl(E[] array, Class<E> clazz);
+    protected abstract E[] applyToImpl(E[] array);
 
-    protected final E[] resolve(E[] array, Class<E> clazz) {
+    protected final E[] resolve(E[] array) {
 
         // region getting all changes
         int i = 0, k = 0;
@@ -151,35 +180,33 @@ public abstract class Change<E> implements ImmutableCollection<E> {
         final Change<E>[] allChanges = new Change[generation + 1];
 
         while (generation > 0) {
-            allChanges[i++] = currentChange;
+            allChanges [allChanges.length - 1 - i++] = currentChange;
             currentChange = currentChange.parent;
             generation = currentChange.generation;
         }
 
-        allChanges[i] = currentChange;
+        allChanges[0] = currentChange;
         // endregion
 
         // region applying changes
         E[] result = array;
 
-        
         for (i = 0; i < allChanges.length; i++) {
             // region optimising sequential changes
-            while (i+1 < allChanges.length && Objects.equals(allChanges[i].getClass(), allChanges[++i].getClass()));
+            // while (i+1 < allChanges.length && Objects.equals(allChanges[i].getClass(), allChanges[i+1].getClass())) {i++;}
+            for (; i+1 < allChanges.length && Objects.equals(allChanges[i].getClass().getSuperclass(), allChanges[i+1].getClass().getSuperclass()); i++);
 
             final int sequentialLength = i - k;
             if (sequentialLength > 1) {
                 final Change<E>[] subArray = (Change<E>[]) Array.newInstance(Change.class, sequentialLength);
-                System.arraycopy(allChanges, k, subArray, 0, sequentialLength);
-                currentChange = sequential(subArray);
-                i--;
+                System.arraycopy(allChanges, k + 1, subArray, 0, sequentialLength);
+                currentChange = subArray[0].toSequential(clazz, subArray);
             } else {
                 currentChange = allChanges[i];
             }
-            System.out.println(i);
             // endregion
 
-            result = currentChange.applyToImpl(result, clazz);
+            result = currentChange.applyToImpl(result);
             k = i;
         }
         // endregion
@@ -187,49 +214,40 @@ public abstract class Change<E> implements ImmutableCollection<E> {
         return result;
     }
 
-    @SafeVarargs
-    private Change<E> sequential(
-            Change<E>... changes
-    ) {
-        // TODO: make it so Change subclasses are responsible for specifying a sequential implementation
-        return switch (changes[0]) {
-            case ArrayAdd    add    -> new SequentialAdd<>(changes);
-            case ArrayRemove remove -> new SequentialRemove<>(changes);
-            case ArrayRetain retain -> new SequentialRetain<>(changes);
-            default                 -> throw new IllegalArgumentException("Unhandled change class");
-        };
-    }
-
     private boolean isFinal(final Change<E> change) {
         return generation == 0;
     }
+
+    // ====================================
+    //             ACCESSORS
+    // ====================================
+
+    /**
+     * Gets the changes that would occur as a result of calling applyTo or toArray <br>
+     * (an empty array signifies either that no change would take place or that changes cannot be determined
+     * before calling either applyTo to toArray, as is the case with {@link RetainIf})
+     * @return (Object[]): changes resulting from calling applyTo or toArray
+     */
+    public abstract Object[] getChanges();
 
     public final int getGeneration() {
         return generation;
     }
 
     // ====================================
-    //              CLEARING
-    // ====================================
-
-    @Override
-    public Change<E> clear() {
-        return new ArrayClear<>();
-    }
-
-    // ====================================
     //             CONTENTS
     // ====================================
 
+    /**
+     * Returns the size of the {@link Change} <br>
+     * (a size of -1 indicates that the change cannot know in advance the size its impact, for example {@link RemoveIf})
+     * @return (int): the amount of elements the change will affect in a given array
+     */
     @Override
-    public int size() {
-        return size;
-    }
+    public abstract int size();
 
     @Override
-    public boolean isEmpty() {
-        return size == 0 && filter == null;
-    }
+    public abstract boolean isEmpty();
 
     @Override
     public abstract boolean contains(Object o);
@@ -237,16 +255,27 @@ public abstract class Change<E> implements ImmutableCollection<E> {
     @Override
     public abstract boolean containsAll(Collection<?> c);
 
+    /**
+     * Determines whether the given element would be changed
+     * @param o ({@code Object}): the {@link Object} to check
+     * @return (boolean): whether the object would be changed
+     */
+    public abstract boolean matches(final Object o);
+
+    public abstract boolean allMatch(final Object... objects);
+
+    public abstract boolean allMatch(final Collection<Object> c);
+
     // ====================================
     //          ARRAY CONVERSION
     // ====================================
 
     @Override
-    public final Object[] toArray() {
+    public final E[] toArray() {
         if (array != null) {
             return applyTo(array);
         } else {
-            return new Object[0];
+            throw new InaccessibleValueException("Can't use toArray, no array was specified to apply changes to");
         }
     }
 

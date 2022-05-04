@@ -1,6 +1,6 @@
 package com.company.collections;
 
-import com.company.collections.changes.ArrayRemove;
+import com.company.collections.changes.Change;
 
 import java.util.*;
 
@@ -16,21 +16,21 @@ public class test {
             array[i] = random.nextInt(MAX_VALUE);
         }
         
-        final Integer[] toRemove = new Integer[10];
+        final Integer[] toRemove = new Integer[1_000];
         for (int i = 0; i < toRemove.length; i++) {
             toRemove[i] = random.nextInt(MAX_VALUE);
         }
 
-        final ArrayRemove<Integer> arrayRemove1 = new ArrayRemove<>(toRemove);
         final ArrayList<Integer> arrayList1 = new ArrayList<>(array.length);
 
         final long changeStart = System.currentTimeMillis();
-        final Integer[] removed = arrayRemove1.applyTo(array);
+        final Integer[] removed = Change.of(Integer.class).addAll(array).removeAll(toRemove).removeFirst(2).toArray();
         final long changeStop = System.currentTimeMillis();
 
-        arrayList1.addAll(Arrays.asList(array));
         final long arrayStart = System.currentTimeMillis();
-        arrayList1.removeAll(Arrays.asList(toRemove));
+        arrayList1.addAll(Arrays.asList(array));
+        arrayList1.removeAll(List.of(toRemove));
+        arrayList1.remove(Integer.valueOf(2));
         final long arrayStop = System.currentTimeMillis();
 
         boolean sizeError = removed.length != arrayList1.size();
@@ -68,7 +68,7 @@ public class test {
             toRetain[i] = random.nextInt(10);
         }
 
-        final ArrayRetain<Integer> retainChange = new ArrayRetain<>(toRetain);
+        final RetainFirst<Integer> retainChange = new RetainFirst<>(toRetain);
         final long retainStart = System.currentTimeMillis();
         final Integer[] retained1 = retainChange.applyTo(array, Integer.class);
         final long retainStop = System.currentTimeMillis();
@@ -96,7 +96,7 @@ public class test {
         //System.out.println(">> RETAINED");
         //System.out.println("retained: " + Arrays.toString(retained));
         System.out.println(">> ALGORITHM DURATION");
-        System.out.println("ArrayRetain: " + (retainStop - retainStart) + "ms");
+        System.out.println("RetainFirst: " + (retainStop - retainStart) + "ms");
         System.out.println("ArrayList : " + (listStop - listStart) + "ms");*/
 
         // endregion

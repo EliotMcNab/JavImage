@@ -1,12 +1,10 @@
 package com.company.collections;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
-public interface ImmutableCollection<E> extends Iterable<E> {
+public interface ImmutableCollection<E> {
     int size();
 
     boolean isEmpty();
@@ -23,7 +21,7 @@ public interface ImmutableCollection<E> extends Iterable<E> {
 
     ImmutableCollection<E> add(E e);
 
-    ImmutableCollection<E> remove(Object o);
+    ImmutableCollection<E> removeFirst(Object o);
 
     boolean containsAll(Collection<?> c);
 
@@ -33,7 +31,7 @@ public interface ImmutableCollection<E> extends Iterable<E> {
 
     ImmutableCollection<E> removeIf(Predicate<? super E> filter);
 
-    ImmutableCollection<E> retain(Object o);
+    ImmutableCollection<E> retainFirst(Object o);
 
     ImmutableCollection<E> retainAll(Collection<?> c);
 
