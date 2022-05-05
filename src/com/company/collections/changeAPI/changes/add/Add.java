@@ -1,0 +1,82 @@
+package com.company.collections.changeAPI.changes.add;
+
+import com.company.collections.changeAPI.Change;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Collection;
+
+public class Add<E> extends AddBase<E> {
+
+    // ====================================
+    //             CONSTRUCTOR
+    // ====================================
+
+    public Add(
+            final Class<E> clazz,
+            final E[] toAdd
+    ) {
+        super(
+                clazz,
+                toAdd
+        );
+    }
+
+    public Add(
+            final Class<E> clazz,
+            final E[] toAdd,
+            final Change<E> parent
+    ) {
+        super(
+                clazz,
+                toAdd,
+                parent
+        );
+    }
+
+    public Add(
+            final Class<E> clazz,
+            final Collection<? extends E> c
+    ) {
+        super(
+                clazz,
+                (E[]) c.toArray(),
+                null
+        );
+    }
+
+    public Add(
+            final Class<E> clazz,
+            final Collection<? extends E> c,
+            final Change<E> parent
+    ) {
+        super(
+                clazz,
+                (E[]) c.toArray(),
+                parent
+        );
+    }
+
+    // ====================================
+    //          APPLYING CHANGES
+    // ====================================
+
+    @Override
+    protected E[] applyToImpl(E[] array) {
+        final E[] result = (E[]) Array.newInstance(clazz, array.length + toAdd.length);
+        System.arraycopy(array, 0, result, 0, array.length);
+        System.arraycopy(toAdd, 0, result, array.length, toAdd.length);
+        return result;
+    }
+
+    // ====================================
+    //          ARRAY CONVERSION
+    // ====================================
+
+    @Override
+    public String toString() {
+        return "Add{toAdd=" +
+                Arrays.toString(toAdd) +
+                "}";
+    }
+}

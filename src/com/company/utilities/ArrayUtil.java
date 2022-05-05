@@ -1,14 +1,14 @@
 package com.company.utilities;
 
-import com.company.collections.changes.Change;
-import com.company.collections.changes.Origin;
-import com.company.collections.changes.clear.Clear;
-import com.company.collections.changes.remove.RemoveAll;
-import com.company.collections.changes.remove.RemoveFirst;
-import com.company.collections.changes.remove.RemoveIf;
-import com.company.collections.changes.retain.RetainAll;
-import com.company.collections.changes.retain.RetainFirst;
-import com.company.collections.changes.retain.RetainIf;
+import com.company.collections.changeAPI.Change;
+import com.company.collections.changeAPI.Origin;
+import com.company.collections.changeAPI.changes.clear.Clear;
+import com.company.collections.changeAPI.changes.remove.RemoveAll;
+import com.company.collections.changeAPI.changes.remove.RemoveFirst;
+import com.company.collections.changeAPI.changes.remove.RemoveIf;
+import com.company.collections.changeAPI.changes.retain.RetainAll;
+import com.company.collections.changeAPI.changes.retain.RetainFirst;
+import com.company.collections.changeAPI.changes.retain.RetainIf;
 import com.company.utilities.comparators.ArrayElementComparator;
 import com.company.utilities.comparators.ObjectComparator;
 import org.jetbrains.annotations.Contract;
@@ -67,23 +67,28 @@ public class ArrayUtil {
     public static <T> T[] retainDistinct(
             @NotNull final T[] array
     ) {
+        return retainDistinct(array, (Comparator<T>) new ObjectComparator());
+    }
+
+    public static <T> T[] retainDistinct(
+            @NotNull final T[] array,
+            @NotNull final Comparator<T> comparator
+    ) {
+        Objects.requireNonNull(comparator);
+        Objects.requireNonNull(array);
+
         final Object[][] wrapped = wrapArrayIndexes(array);
-        final Object[] distinct = retainDistinctImpl(wrapped, new ArrayElementComparator(0));
-        final Object[] result = new Object[distinct.length];
+        final Object[] distinct = retainDistinctImpl(wrapped, new ArrayElementComparator<>(0, (Comparator<Object>) comparator));
+        final T[] result = (T[]) Array.newInstance(array.getClass().getComponentType(), distinct.length);
 
-        final Object[][] distinct2D = new Object[distinct.length][2];
-        for (int i = 0; i < distinct2D.length; i++) {
-            distinct2D[i] = (Object[]) distinct[i];
-        }
-
-        Arrays.sort(distinct2D, new ArrayElementComparator(1));
+        Arrays.parallelSort(distinct, new ArrayElementComparator(1));
 
         int k = 0;
-        for (int i = 0; i < distinct.length; i++) {
-            result[k++] = distinct2D[i][0];
+        for (Object o : distinct) {
+            result[k++] = (T) ((Object[]) o)[0];
         }
 
-        return (T[]) result;
+        return result;
     }
 
     /**
@@ -306,6 +311,13 @@ public class ArrayUtil {
 
     public static int[] quickFindFirst(
             @NotNull final Object[] array,
+            final Object toFind
+    ) {
+        return quickFindFirst(array, new Object[]{toFind});
+    }
+
+    public static int[] quickFindFirst(
+            @NotNull final Object[] array,
             final Object[] toFind
     ) {
         // checks the validity of the arguments
@@ -326,7 +338,7 @@ public class ArrayUtil {
         Arrays.fill(result, Integer.MAX_VALUE);
 
         // creating comparators
-        final Comparator<Object[]> zerothComparator = new ArrayElementComparator(0); // used for sorting arrays
+        final Comparator<Object[]> zerothComparator = new ArrayElementComparator<>(0); // used for sorting arrays
         final Comparator<Object> comparator = new ObjectComparator();              // used for comparing array elements
 
         // sorting arrays
@@ -365,6 +377,13 @@ public class ArrayUtil {
         return result;
     }
 
+    public static <T> int[] quickFindAll(
+            @NotNull final T[] array,
+            final Object toFind
+    ) {
+        return quickFindAll(array, new Object[]{toFind});
+    }
+
     /**
      * Finds all occurrence of given values in an array
      * @implNote optimised for very large arrays
@@ -393,7 +412,7 @@ public class ArrayUtil {
         final Object[][] searchArray = concatenate(a, b);
 
         // sorts search array
-        Arrays.parallelSort(searchArray, 1, searchArray.length, new ArrayElementComparator(0));
+        Arrays.parallelSort(searchArray, 1, searchArray.length, new ArrayElementComparator<>(0));
 
         // counter variables for the loop*
         int i, j, k;
@@ -547,12 +566,17 @@ public class ArrayUtil {
         final Origin<Integer> origin = new Origin<>(Integer.class, testArray);
         System.out.println(origin);
 
-        final Integer[] testChange = Change.of(Integer.class)
-                                           .addAll(1, 5, 17, 19, 12, 6, 6, 5, 7, 8, 17)
-                                           .removeFirst(1, 2, 5, 3, 4, 4, 5, 6, 17)
-                                           .removeAll(1, 2, 5, 3, 4, 4, 5, 6)
-                                           .toArray();
+        final Change<Integer> change = Change.of(Integer.class)
+                                             .addAll(1, 5, 17, 19, 12, 6, 6, 5, 7, 8, 17)
+                                             .removeIf(integer -> integer % 3 == 0)
+                                             .ordered()
+                                             .unique()
+                                             .forEach(integer -> integer % 2)
+                                             .forEach(integer -> integer * 2)
+                                             .optimise();
 
-        System.out.println(Arrays.toString(testChange));
+        System.out.println(change);
+        System.out.println(Arrays.toString(change.countMatches(2, 0, 3)));
+        System.out.println(change.countMatches(integer -> integer < 2));
     }
 }

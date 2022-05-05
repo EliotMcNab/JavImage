@@ -1,6 +1,6 @@
 package com.company.collections;
 
-import com.company.collections.changes.Change;
+import com.company.collections.changeAPI.Change;
 
 import java.util.*;
 
@@ -16,7 +16,7 @@ public class test {
             array[i] = random.nextInt(MAX_VALUE);
         }
         
-        final Integer[] toRemove = new Integer[1_000];
+        final Integer[] toRemove = new Integer[500_000];
         for (int i = 0; i < toRemove.length; i++) {
             toRemove[i] = random.nextInt(MAX_VALUE);
         }
@@ -24,13 +24,17 @@ public class test {
         final ArrayList<Integer> arrayList1 = new ArrayList<>(array.length);
 
         final long changeStart = System.currentTimeMillis();
-        final Integer[] removed = Change.of(Integer.class).addAll(array).removeAll(toRemove).removeFirst(2).toArray();
+        final Integer[] removed = Change.of(Integer.class)
+                                             .addAll(array)
+                                             .removeAll(toRemove)
+                                             .removeAll(toRemove)
+                                             .toArray();
         final long changeStop = System.currentTimeMillis();
 
         final long arrayStart = System.currentTimeMillis();
         arrayList1.addAll(Arrays.asList(array));
-        arrayList1.removeAll(List.of(toRemove));
-        arrayList1.remove(Integer.valueOf(2));
+        arrayList1.removeAll(Arrays.asList(toRemove));
+        arrayList1.removeAll(Arrays.asList(toRemove));
         final long arrayStop = System.currentTimeMillis();
 
         boolean sizeError = removed.length != arrayList1.size();
@@ -44,13 +48,13 @@ public class test {
 
         System.out.println(">> SIZE DISCREPANCIES");
         System.out.println(sizeError ? "YES" : "NONE");
-        System.out.println("Change: " + removed.length);
-        System.out.println("ArrayList  : " + arrayList1.size());
+        System.out.println("Change   : " + removed.length);
+        System.out.println("ArrayList: " + arrayList1.size());
         System.out.println(">> REMOVAL DISCREPANCIES");
         System.out.println(removalError ? "YES" : "NONE");
         System.out.println(">> ALGORITHM DURATION");
-        System.out.println("Change: " + (changeStop - changeStart) + "ms");
-        System.out.println("ArrayList  : " + (arrayStop - arrayStart) + "ms");
+        System.out.println("Change   : " + (changeStop - changeStart) + "ms");
+        System.out.println("ArrayList: " + (arrayStop - arrayStart) + "ms");
 
         // endregion
 

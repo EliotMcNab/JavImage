@@ -6,21 +6,27 @@ import java.util.Comparator;
 /**
  * Used to compare two 1D arrays together where only the nth element is taken into consideration
  */
-public class ArrayElementComparator implements Comparator<Object[]> {
+public class ArrayElementComparator<T> implements Comparator<T[]> {
     private final int index;
+    private final Comparator<T> comparator;
 
     public ArrayElementComparator(
             final int index
     ) {
         this.index = index;
+        this.comparator = (Comparator<T>) new ObjectComparator();
+    }
+
+    public ArrayElementComparator(
+            final int index,
+            final Comparator<T> comparator
+    ) {
+        this.index = index;
+        this.comparator = comparator;
     }
 
     @Override
-    public int compare(Object[] o1, Object[] o2) {
-        try {
-            return ((Comparable<Object>) o1[index]).compareTo(o2[index]);
-        } catch (ClassCastException e) {
-            return Integer.compare(o1[index].hashCode(), o2[index].hashCode());
-        }
+    public int compare(T[] o1, T[] o2) {
+        return comparator.compare(o1[index], o2[index]);
     }
 }
