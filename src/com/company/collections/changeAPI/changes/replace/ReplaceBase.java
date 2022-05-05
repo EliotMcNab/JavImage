@@ -1,38 +1,38 @@
-package com.company.collections.changeAPI.changes.retain;
+package com.company.collections.changeAPI.changes.replace;
 
 import com.company.collections.changeAPI.Change;
 import com.company.collections.changeAPI.changes.ConditionalChange;
 
-import java.util.Arrays;
 import java.util.function.Predicate;
 
-public abstract class RetainBase<E> extends ConditionalChange<E> {
+public abstract class ReplaceBase<E> extends ConditionalChange<E> {
 
     // ====================================
     //               FIELDS
     // ====================================
-    protected final Object[] toRetain;
+
+    protected final Object[] toReplace;
 
     // ====================================
     //             CONSTRUCTOR
     // ====================================
 
-    public RetainBase(
+    public ReplaceBase(
             final Class<E> clazz,
-            final Object[] toRetain,
-            final Predicate<? super E> filter
+            final Object[] toReplace,
+            final Predicate<E> filter
     ) {
         super(
                 clazz,
                 filter
         );
-        this.toRetain = toRetain;
+        this.toReplace = toReplace;
     }
 
-    public RetainBase(
+    public ReplaceBase(
             final Class<E> clazz,
-            final Object[] toRetain,
-            final Predicate<? super E> filter,
+            final Object[] toReplace,
+            final Predicate<E> filter,
             final Change<E> parent
     ) {
         super(
@@ -40,19 +40,11 @@ public abstract class RetainBase<E> extends ConditionalChange<E> {
                 filter,
                 parent
         );
-        this.toRetain = toRetain;
+        this.toReplace = toReplace;
     }
 
     // ====================================
-    //             ACCESSORS
-    // ====================================
-
-    public Object[] getToRetain() {
-        return Arrays.copyOf(toRetain, toRetain.length);
-    }
-
-    // ====================================
-    //              APPLYING
+    //          APPLYING CHANGES
     // ====================================
 
     @Override
@@ -60,4 +52,11 @@ public abstract class RetainBase<E> extends ConditionalChange<E> {
         return null;
     }
 
+    // ====================================
+    //             ACCESSORS
+    // ====================================
+
+    public Object[] getToReplace() {
+        return toReplace;
+    }
 }

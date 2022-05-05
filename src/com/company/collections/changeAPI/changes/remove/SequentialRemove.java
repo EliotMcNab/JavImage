@@ -151,6 +151,20 @@ public class SequentialRemove<E> extends RemoveBase<E>{
 
             boolean runAgain = false;
 
+            // region ignoring values which are both in removeAllValues and removeFirstValues
+            if (jAll >= 0) {
+                // while removeAllValues[jAll] == removeFirstValues[jFirst]
+                while (jFirst >= 0 && comparator.compare(removeAllValues[jAll], removeFirstValues[jFirst]) == 0) {
+                    jFirst--; // moves on to the next element to find the first occurrence of
+
+                    // if previous element had been found, moves on to the next position in the array
+                    if (indexesFirst[kFirst] != Integer.MAX_VALUE) {
+                        kFirst++;
+                    }
+                }
+            }
+            // endregion
+
             // region finding all value instances
             if (jAll >= 0) {
                 final int comparison = comparator.compare(search[iSearch][0], removeAllValues[jAll]);
@@ -168,7 +182,8 @@ public class SequentialRemove<E> extends RemoveBase<E>{
             // endregion
 
             // region finding first value instance
-            if (jFirst >= 0) {
+            // if jFirst >= 0 && (jAll < 0 || removeAllValues[jAll] < removeFirstValues[jFirst])
+            if (jFirst >= 0 && (jAll < 0 || comparator.compare(removeAllValues[jAll], removeFirstValues[jFirst]) < 0)) {
                 final int comparison = comparator.compare(search[iSearch][0], removeFirstValues[jFirst]);
 
                 // search[iSearch][0] < removeFirstValues[jFirst]
@@ -194,10 +209,10 @@ public class SequentialRemove<E> extends RemoveBase<E>{
         }
 
         // concatenates and sorts all the found indexes
-        final int[] allIndexes = ArrayUtil.retainDistinct(ArrayUtil.concatenate(
+        final int[] allIndexes = ArrayUtil.concatenate(
                 Arrays.copyOf(indexesAll, kAll),
                 Arrays.copyOf(indexesFirst, kFirst)
-        ));
+        );
 
         Arrays.parallelSort(allIndexes);
 

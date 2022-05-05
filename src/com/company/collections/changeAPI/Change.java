@@ -4,6 +4,10 @@ import com.company.collections.ImmutableCollection;
 import com.company.collections.InaccessibleValueException;
 import com.company.collections.changeAPI.changes.add.Add;
 import com.company.collections.changeAPI.changes.clear.Clear;
+import com.company.collections.changeAPI.changes.replace.ReplaceAt;
+import com.company.collections.changeAPI.changes.replace.ReplaceFirst;
+import com.company.collections.changeAPI.changes.replace.ReplaceIf;
+import com.company.collections.changeAPI.changes.replace.ReplaceLast;
 import com.company.collections.changeAPI.information.count.CountIf;
 import com.company.collections.changeAPI.information.count.CountOccurrences;
 import com.company.collections.changeAPI.information.find.FindAll;
@@ -160,6 +164,26 @@ public abstract class Change<E> implements ImmutableCollection<E>, Iterable<Chan
     }
 
     // ====================================
+    //             REPLACING
+    // ====================================
+
+    public final ReplaceAt<E> replaceAt(Object... objects) {
+        return new ReplaceAt<>(clazz, objects, this);
+    }
+
+    public final ReplaceIf<E> replaceIf(final Predicate<E> filter, final E replacingValue) {
+        return new ReplaceIf<>(clazz, filter, replacingValue, this);
+    }
+
+    public final ReplaceFirst<E> replaceFirst(final Predicate<E> filter, final E replacingValue) {
+        return new ReplaceFirst<>(clazz, filter, replacingValue, this);
+    }
+
+    public final ReplaceLast<E> replaceLast(final Predicate<E> filter, final E replacingValue) {
+        return new ReplaceLast<>(clazz, filter, replacingValue, this);
+    }
+
+    // ====================================
     //              CLEARING
     // ====================================
 
@@ -256,9 +280,9 @@ public abstract class Change<E> implements ImmutableCollection<E>, Iterable<Chan
     protected abstract E[] applyToImpl(E[] array);
 
     protected final E[] resolve(E[] array) {
-
         int i = 0, k = 0;
-         final Change<E>[] allChanges = retrieveAllChanges(this);
+
+        final Change<E>[] allChanges = retrieveAllChanges(this);
 
         // region applying changes
         E[] result = array;
@@ -266,7 +290,6 @@ public abstract class Change<E> implements ImmutableCollection<E>, Iterable<Chan
         for (; i < allChanges.length; i++) {
 
             // region optimising sequential changes
-            // while (i+1 < allChanges.length && Objects.equals(allChanges[i].getClass(), allChanges[i+1].getClass())) {i++;}
             for (; i+1 < allChanges.length && allChanges[i].canSequentialise(allChanges[i+1]); i++) {};
 
             final Change<E> currentChange;

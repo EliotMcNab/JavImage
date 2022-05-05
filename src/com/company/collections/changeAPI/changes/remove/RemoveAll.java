@@ -85,51 +85,22 @@ public class RemoveAll<E> extends RemoveBase<E> {
     @Override
     protected E[] applyToImpl(E[] array) {
         Objects.requireNonNull(array);
-        Objects.requireNonNull(clazz);
 
-        if (isBigChange(array)) return bigRemove(array, clazz);
-        else                    return smallRemove(array, clazz);
+        if (isBigChange(array)) return bigRemove(array);
+        else                    return smallRemove(array);
     }
 
-    private E[] smallRemove(E[] array, Class<E> clazz) {
+    private E[] smallRemove(E[] array) {
         return ArrayUtil.batchRemove(array, clazz, Arrays.asList(toRemove));
     }
 
-    private E[] bigRemove(E[] array, final Class<E> clazz) {
-        // determines the index of every element to remove
-        final int[] searchIndexes = ArrayUtil.quickFindAll(array, toRemove);
+    private E[] bigRemove(E[] array) {
+        // determines the index of every element to remove & sorts them
+        final int[] containedIndex = ArrayUtil.quickFindAll(array, toRemove);;
+        Arrays.parallelSort(containedIndex);
 
-        // filters out elements which are not contained in the array
-        // ignoring duplicate elements
-        final int[] containedIndex = Arrays.stream(searchIndexes)
-                .filter(value -> value >= 0)
-                .sorted()
-                .distinct()
-                .toArray();
-
-        final E[] result = (E[]) Array.newInstance(clazz, array.length - containedIndex.length);
-        int lastRemove = 0;
-        int lastIndex = 0;
-
-        if (containedIndex.length == 0) return result;
-
-        // loops through the indexes of the elements contained in the array
-        for (int i = 0; i < containedIndex.length; i++) {
-            // copies all the elements between the current element and the last
-            final int length = containedIndex[i] - lastRemove;
-            System.arraycopy(array, lastRemove, result, lastIndex, length);
-            lastIndex += length;
-            lastRemove = containedIndex[i] + 1;
-        }
-
-        // copies over any remaining elements
-        final int lastContainedIndex = containedIndex[containedIndex.length - 1];
-        if (lastContainedIndex != array.length - 1) {
-            System.arraycopy(array, lastRemove, result, lastIndex, array.length - 1 - lastContainedIndex);
-        }
-
-        // returns the final resulting array
-        return result;
+        // returns the array without the elements to remove
+        return ArrayUtil.removeAt(array, containedIndex);
     }
 
     // ====================================

@@ -32,9 +32,9 @@ public class test {
         final long changeStop = System.currentTimeMillis();
 
         final long arrayStart = System.currentTimeMillis();
-        /*arrayList1.addAll(Arrays.asList(array));
+        arrayList1.addAll(Arrays.asList(array));
         arrayList1.removeAll(Arrays.asList(toRemove));
-        arrayList1.removeAll(Arrays.asList(toRemove));*/
+        arrayList1.removeAll(Arrays.asList(toRemove));
         final long arrayStop = System.currentTimeMillis();
 
         boolean sizeError = removed.length != arrayList1.size();

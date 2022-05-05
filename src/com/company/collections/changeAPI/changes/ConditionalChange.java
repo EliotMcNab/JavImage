@@ -10,6 +10,7 @@ public abstract class ConditionalChange<E> extends Change<E> {
     // ====================================
     //               FIELDS
     // ====================================
+
     protected final Predicate<? super E> filter;
 
     // ====================================
@@ -53,5 +54,12 @@ public abstract class ConditionalChange<E> extends Change<E> {
             if (!matches(o)) return false;
         }
         return true;
+    }
+
+    // ====================================
+    //             ACCESSORS
+    // ====================================
+    public Predicate<? super E> getFilter() {
+        return filter;
     }
 }

@@ -58,6 +58,11 @@ public class ArrayUtil {
         array[b] = temp;
     }
 
+    /**
+     * Keeps only the distinct elements in an array
+     * @param array ({@code int[]}): array to check the values of (<strong>MUST BE SORTED</strong>)
+     * @return (int[]): distinct elements in the array
+     */
     public static int[] retainDistinct(
             final int @NotNull [] array
     ) {
@@ -65,15 +70,13 @@ public class ArrayUtil {
         Objects.requireNonNull(array);;
         if (array.length == 0) return array;
 
-        final int[] arrayCopy = Arrays.copyOf(array, array.length);
         final int[] blindResult = new int[array.length];
 
-        Arrays.parallelSort(arrayCopy);
-        blindResult[0] = arrayCopy[0];
+        blindResult[0] = array[0];
 
         int i, k;
-        for (i = 1, k = 1; i < arrayCopy.length; i++) {
-            if (arrayCopy[i] != arrayCopy[i-1]) blindResult[k++] = arrayCopy[i];
+        for (i = 1, k = 1; i < array.length; i++) {
+            if (array[i] != array[i-1]) blindResult[k++] = array[i];
         }
 
         return Arrays.copyOf(blindResult, k);
@@ -81,7 +84,7 @@ public class ArrayUtil {
 
     /**
      * Keeps only the distinct elements in an array
-     * @param array ({@code T[]}): array to check the values of
+     * @param array ({@code T[]}): array to check the values of (<strong>MUST BE SORTED</strong>)
      * @return (T[]): distinct elements in the array
      * @param <T> class of the array
      */
@@ -554,8 +557,8 @@ public class ArrayUtil {
         final long start = System.currentTimeMillis();
         final Change<Integer> change = Change.of(Integer.class)
                                              .addAll(1, 5, 17, 19, 12, 6, 6, 5, 7, 8, 17)
-                                             .removeAt(0, 1, 2)
-                                             .removeAt(3, 4)
+                                             .replaceIf(integer -> integer % 2 == 0, -1)
+                                             .replaceIf(integer -> integer % 5 == 0, -2)
                                              .optimise();
         System.out.println(System.currentTimeMillis() - start);
 

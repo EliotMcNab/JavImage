@@ -59,7 +59,10 @@ public class SequentialRemoveAt<E> extends RemoveBase<E> {
 
     @Override
     protected E[] applyToImpl(E[] array) {
-        final int[] indexes = ArrayUtil.retainDistinct(concatenateRemovalIndexes(changes));
+        final int[] allIndexes = concatenateRemovalIndexes(changes);
+        Arrays.parallelSort(allIndexes);
+
+        final int[] indexes = ArrayUtil.retainDistinct(allIndexes);
         return ArrayUtil.removeAt(array, indexes);
     }
 
