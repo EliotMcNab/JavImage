@@ -35,6 +35,11 @@ public class SequentialAdd<E> extends AddBase<E> {
     //          APPLYING CHANGES
     // ====================================
 
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return false;
+    }
+
     private int determineTotalChangeLength(
             final Change<E>[] changes
     ) {

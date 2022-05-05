@@ -4,9 +4,18 @@ import com.company.collections.changeAPI.Change;
 import com.company.utilities.ArrayUtil;
 import com.company.utilities.comparators.ObjectComparator;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 public class Unique<E> extends UniqueBase<E> {
+
+    // ====================================
+    //               FIELDS
+    // ====================================
+
+    private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{
+            Unique.class
+    };
 
     // ====================================
     //             CONSTRUCTOR
@@ -57,6 +66,11 @@ public class Unique<E> extends UniqueBase<E> {
     // ====================================
     //          APPLYING CHANGES
     // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return Arrays.asList(SEQUENTIALISEABLE).contains(change.getClass());
+    }
 
     @Override
     protected E[] applyToImpl(E[] array) {

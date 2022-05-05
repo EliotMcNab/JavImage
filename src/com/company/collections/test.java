@@ -16,7 +16,7 @@ public class test {
             array[i] = random.nextInt(MAX_VALUE);
         }
         
-        final Integer[] toRemove = new Integer[500_000];
+        final Integer[] toRemove = new Integer[10_000];
         for (int i = 0; i < toRemove.length; i++) {
             toRemove[i] = random.nextInt(MAX_VALUE);
         }
@@ -25,16 +25,16 @@ public class test {
 
         final long changeStart = System.currentTimeMillis();
         final Integer[] removed = Change.of(Integer.class)
-                                             .addAll(array)
-                                             .removeAll(toRemove)
-                                             .removeAll(toRemove)
-                                             .toArray();
+                                            .addAll(array)
+                                            .removeAll(toRemove)
+                                            .removeAll(toRemove)
+                                            .toArray();
         final long changeStop = System.currentTimeMillis();
 
         final long arrayStart = System.currentTimeMillis();
-        arrayList1.addAll(Arrays.asList(array));
+        /*arrayList1.addAll(Arrays.asList(array));
         arrayList1.removeAll(Arrays.asList(toRemove));
-        arrayList1.removeAll(Arrays.asList(toRemove));
+        arrayList1.removeAll(Arrays.asList(toRemove));*/
         final long arrayStop = System.currentTimeMillis();
 
         boolean sizeError = removed.length != arrayList1.size();

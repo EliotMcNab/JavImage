@@ -58,6 +58,27 @@ public class ArrayUtil {
         array[b] = temp;
     }
 
+    public static int[] retainDistinct(
+            final int @NotNull [] array
+    ) {
+        // checks the validity of parameter
+        Objects.requireNonNull(array);;
+        if (array.length == 0) return array;
+
+        final int[] arrayCopy = Arrays.copyOf(array, array.length);
+        final int[] blindResult = new int[array.length];
+
+        Arrays.parallelSort(arrayCopy);
+        blindResult[0] = arrayCopy[0];
+
+        int i, k;
+        for (i = 1, k = 1; i < arrayCopy.length; i++) {
+            if (arrayCopy[i] != arrayCopy[i-1]) blindResult[k++] = arrayCopy[i];
+        }
+
+        return Arrays.copyOf(blindResult, k);
+    }
+
     /**
      * Keeps only the distinct elements in an array
      * @param array ({@code T[]}): array to check the values of
@@ -530,53 +551,14 @@ public class ArrayUtil {
     }
 
     public static void main(String[] args) {
-
-        final Integer[] testArray = new Integer[]{3, 5, 4, 4, 2, 7, 12, 7, 0, 12};
-        final Integer[] toFind = new Integer[]{4, 0, 7};
-
-        System.out.println("RETAIN FIRST");
-        final RetainFirst<Integer> retainFirst = new RetainFirst<>(Integer.class, toFind);
-        System.out.println(Arrays.toString(retainFirst.applyTo(testArray)));
-
-        System.out.println("RETAIN ALL");
-        final RetainAll<Integer> retainAll = new RetainAll<>(Integer.class, toFind);
-        System.out.println(Arrays.toString(retainAll.applyTo(testArray)));
-
-        System.out.println("RETAIN IF");
-        final RetainIf<Integer> retainIf = new RetainIf<>(Integer.class, integer -> integer % 2 == 0);
-        System.out.println(Arrays.toString(retainIf.applyTo(testArray)));
-
-        System.out.println("REMOVE FIRST");
-        final RemoveFirst<Integer> removeFirst = new RemoveFirst<>(Integer.class, toFind);
-        System.out.println(Arrays.toString(removeFirst.applyTo(testArray)));
-
-        System.out.println("REMOVE ALL");
-        final RemoveAll<Integer> removeAll = new RemoveAll<>(Integer.class, toFind);
-        System.out.println(Arrays.toString(removeAll.applyTo(testArray)));
-
-        System.out.println("REMOVE IF");
-        final RemoveIf<Integer> removeIf = new RemoveIf<>(Integer.class, integer -> integer % 2 == 0);
-        System.out.println(Arrays.toString(removeIf.applyTo(testArray)));
-
-        System.out.println("CLEAR");
-        final Clear<Integer> clear = new Clear<>(Integer.class);
-        System.out.println(Arrays.toString(clear.applyTo(testArray)));
-
-        System.out.println("ORIGIN");
-        final Origin<Integer> origin = new Origin<>(Integer.class, testArray);
-        System.out.println(origin);
-
+        final long start = System.currentTimeMillis();
         final Change<Integer> change = Change.of(Integer.class)
                                              .addAll(1, 5, 17, 19, 12, 6, 6, 5, 7, 8, 17)
-                                             .removeIf(integer -> integer % 3 == 0)
-                                             .ordered()
-                                             .unique()
-                                             .forEach(integer -> integer % 2)
-                                             .forEach(integer -> integer * 2)
+                                             .removeAt(0, 1, 2)
+                                             .removeAt(3, 4)
                                              .optimise();
+        System.out.println(System.currentTimeMillis() - start);
 
         System.out.println(change);
-        System.out.println(Arrays.toString(change.countMatches(2, 0, 3)));
-        System.out.println(change.countMatches(integer -> integer < 2));
     }
 }

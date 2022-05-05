@@ -9,6 +9,12 @@ import java.util.Collection;
 public class Add<E> extends AddBase<E> {
 
     // ====================================
+    //               FIELDS
+    // ====================================
+
+    private static final Class<?>[] SEQUENTIALISATBLE = new Class<?>[]{Add.class};
+
+    // ====================================
     //             CONSTRUCTOR
     // ====================================
 
@@ -60,6 +66,11 @@ public class Add<E> extends AddBase<E> {
     // ====================================
     //          APPLYING CHANGES
     // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return Arrays.asList(SEQUENTIALISATBLE).contains(change.getClass());
+    }
 
     @Override
     protected E[] applyToImpl(E[] array) {

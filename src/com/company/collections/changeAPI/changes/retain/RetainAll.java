@@ -8,6 +8,15 @@ import java.util.*;
 public class RetainAll<E> extends RetainBase<E> {
 
     // ====================================
+    //               FIELDS
+    // ====================================
+
+    private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{
+            RetainAll.class,
+            RetainFirst.class
+    };
+
+    // ====================================
     //             CONSTRUCTOR
     // ====================================
 
@@ -62,6 +71,11 @@ public class RetainAll<E> extends RetainBase<E> {
     // ====================================
     //          APPLYING CHANGES
     // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return Arrays.asList(SEQUENTIALISEABLE).contains(change.getClass());
+    }
 
     @Override
     protected E[] applyToImpl(E[] array) {

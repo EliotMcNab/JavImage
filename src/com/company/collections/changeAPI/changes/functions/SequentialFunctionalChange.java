@@ -33,6 +33,11 @@ public class SequentialFunctionalChange<E> extends FunctionalChange<E> {
     // ====================================
 
     @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return false;
+    }
+
+    @Override
     protected E[] applyToImpl(E[] array) {
         final E[] result = Arrays.copyOf(array, array.length);
 

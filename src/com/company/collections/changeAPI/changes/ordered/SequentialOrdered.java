@@ -34,6 +34,11 @@ public class SequentialOrdered<E> extends OrderedBase<E> {
     // ====================================
 
     @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return false;
+    }
+
+    @Override
     protected E[] applyToImpl(E[] array) {
         final Object[] uniqueComparators = ArrayUtil.retainDistinct(getComparators());
 

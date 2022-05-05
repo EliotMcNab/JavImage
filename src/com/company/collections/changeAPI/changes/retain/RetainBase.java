@@ -11,7 +11,6 @@ public abstract class RetainBase<E> extends ConditionalChange<E> {
     // ====================================
     //               FIELDS
     // ====================================
-
     protected final Object[] toRetain;
 
     // ====================================

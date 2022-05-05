@@ -1,11 +1,19 @@
 package com.company.collections.changeAPI.changes.functions;
 
 import com.company.collections.changeAPI.Change;
+import com.company.collections.changeAPI.changes.add.Add;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.function.Function;
 
 public class ForEach<E> extends FunctionalChange<E> {
+
+    // ====================================
+    //               FIELDS
+    // ====================================
+
+    private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{ForEach.class};
 
     // ====================================
     //             CONSTRUCTOR
@@ -36,6 +44,11 @@ public class ForEach<E> extends FunctionalChange<E> {
     // ====================================
     //          APPLYING CHANGES
     // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return Arrays.asList(SEQUENTIALISEABLE).contains(change.getClass());
+    }
 
     @Override
     protected E[] applyToImpl(E[] array) {

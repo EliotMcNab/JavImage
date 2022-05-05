@@ -1,12 +1,19 @@
 package com.company.collections.changeAPI.changes.ordered;
 
 import com.company.collections.changeAPI.Change;
+import com.company.collections.changeAPI.changes.add.Add;
 import com.company.utilities.comparators.ObjectComparator;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
 public class Ordered<E> extends OrderedBase<E> {
+
+    // ====================================
+    //               FIELDS
+    // ====================================
+
+    private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{Ordered.class};
 
     // ====================================
     //             CONSTRUCTOR
@@ -57,6 +64,11 @@ public class Ordered<E> extends OrderedBase<E> {
     // ====================================
     //          APPLYING CHANGES
     // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return Arrays.asList(SEQUENTIALISEABLE).contains(change.getClass());
+    }
 
     @Override
     protected E[] applyToImpl(E[] array) {

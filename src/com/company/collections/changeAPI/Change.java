@@ -236,6 +236,7 @@ public abstract class Change<E> implements ImmutableCollection<E>, Iterable<Chan
     //              APPLYING
     // ====================================
 
+    protected abstract boolean canSequentialise(final Change<E> change);
     protected abstract Change<E> toSequential(Change<E>[] changes);
 
     public final Origin<E> optimise() {
@@ -263,9 +264,10 @@ public abstract class Change<E> implements ImmutableCollection<E>, Iterable<Chan
         E[] result = array;
 
         for (; i < allChanges.length; i++) {
+
             // region optimising sequential changes
             // while (i+1 < allChanges.length && Objects.equals(allChanges[i].getClass(), allChanges[i+1].getClass())) {i++;}
-            for (; i+1 < allChanges.length && Objects.equals(allChanges[i].getClass().getSuperclass(), allChanges[i+1].getClass().getSuperclass()); i++);
+            for (; i+1 < allChanges.length && allChanges[i].canSequentialise(allChanges[i+1]); i++) {};
 
             final Change<E> currentChange;
             final int sequentialLength = i - k;

@@ -14,9 +14,6 @@ public class SequentialRemove<E> extends RemoveBase<E>{
     // =====================================
 
     private final Change<E>[] changes;
-    private Object[] allToRemove;
-    private boolean concatenated = false;
-    private final int totalLength;
 
     // ==================================
     //            CONSTRUCTOR
@@ -30,48 +27,38 @@ public class SequentialRemove<E> extends RemoveBase<E>{
                 clazz,
                 null,
                 null,
-                new int[0]
+                null
         );
         this.changes = changes;
-        this.totalLength = determineTotalChangeLength(changes);
     }
 
     // ====================================
     //          APPLYING CHANGES
     // ====================================
 
-    private int determineTotalChangeLength(
-            final Change<E>[] changes
-    ) {
-        int length = 0;
-        for (Change<E> change : changes) {
-            final RemoveBase<E> remove = (RemoveBase<E>) change;
-            if (remove.toRemove != null) length += remove.toRemove.length;
-        }
-        return length;
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return false;
     }
 
     private Change<E>[][] separateChanges(final Change<E>[] changes) {
 
-        final Change<E>[][] result = new Change[3][];
+        final Change<E>[][] result = new Change[4][];
         final Change<E>[] removeAll = new Change[changes.length];
         final Change<E>[] removeFirst = new Change[changes.length];
-        final Change<E>[] removeIf = new Change[changes.length];
 
-        int kAll = 0, kFirst = 0, kIf = 0;
+        int kAll = 0, kFirst = 0;
 
         for (Change<E> change : changes) {
             switch (change) {
                 case RemoveAll   e -> removeAll[kAll++] = change;
                 case RemoveFirst e -> removeFirst[kFirst++] = change;
-                case RemoveIf    e -> removeIf[kIf++] = change;
                 default                 -> throw new IllegalArgumentException("Unhandled change class " + change);
             }
         }
 
         result[0] = Arrays.copyOf(removeAll, kAll);
         result[1] = Arrays.copyOf(removeFirst, kFirst);
-        result[2] = Arrays.copyOf(removeIf, kIf);
 
         return result;
     }
@@ -96,6 +83,27 @@ public class SequentialRemove<E> extends RemoveBase<E>{
         return result;
     }
 
+    private int[] concatenateIndexes(final Change<E>[] changes) {
+        int length = 0;
+        for (Object o : changes) {
+            length += ((RemoveBase<E>) o).removalIndexes.length;
+        }
+
+        final int[] result = new int[length];
+
+        int k = 0;
+        for (Change<E> change : changes) {
+            if (change == null) continue;
+
+            final RemoveBase<E> remove = (RemoveBase<E>) change;
+            System.arraycopy(remove.removalIndexes, 0, result, k, remove.removalIndexes.length);
+            k += remove.removalIndexes.length;
+        }
+
+        return result;
+
+    }
+
     @Override
     protected E[] applyToImpl(E[] array) {
         // validates the parameters
@@ -105,7 +113,6 @@ public class SequentialRemove<E> extends RemoveBase<E>{
         final Change<E>[][] removalTypes = separateChanges(changes);
         final Change<E>[] removeAll = removalTypes[0];
         final Change<E>[] removeFirst = removalTypes[1];
-        final Change<E>[] removeIf = removalTypes[2];
 
         // concatenates all elements to remove
         final Object[] removeAllValues =
@@ -119,9 +126,9 @@ public class SequentialRemove<E> extends RemoveBase<E>{
         final Object[][] search = ArrayUtil.concatenate(a, b);
 
         // creating result arrays
-        final int[] allOccurenceIndexes = new int[array.length];
-        final int[] firstOccurenceIndexes = new int[removeFirstValues.length];
-        Arrays.fill(firstOccurenceIndexes, Integer.MAX_VALUE);
+        final int[] indexesAll = new int[array.length];
+        final int[] indexesFirst = new int[removeFirstValues.length];
+        Arrays.fill(indexesFirst, Integer.MAX_VALUE);
 
         // initialing comparator
         final Comparator<Object> comparator = new ObjectComparator();
@@ -144,20 +151,6 @@ public class SequentialRemove<E> extends RemoveBase<E>{
 
             boolean runAgain = false;
 
-            // region ignoring values which are both in removeAllValues and removeFirstValues
-            if (jAll >= 0) {
-                // while removeAllValues[jAll] == removeFirstValues[jFirst]
-                while (jFirst >= 0 && comparator.compare(removeAllValues[jAll], removeFirstValues[jFirst]) == 0) {
-                    jFirst--; // moves on to the next element to find the first occurrence of
-
-                    // if previous element had been found, moves on to the next position in the array
-                    if (firstOccurenceIndexes[kFirst] != Integer.MAX_VALUE) {
-                        kFirst++;
-                    }
-                }
-            }
-            // endregion
-
             // region finding all value instances
             if (jAll >= 0) {
                 final int comparison = comparator.compare(search[iSearch][0], removeAllValues[jAll]);
@@ -169,14 +162,13 @@ public class SequentialRemove<E> extends RemoveBase<E>{
                 }
                 // search[iSearch][0] == removeAllValues[jAll]
                 else if (comparison == 0) {
-                    allOccurenceIndexes[kAll++] = (int) search[iSearch][1];
+                    indexesAll[kAll++] = (int) search[iSearch][1];
                 }
             }
             // endregion
 
             // region finding first value instance
-            // if jFirst >= 0 && (jAll < 0 || removeAllValues[jAll] < removeFirstValues[jFirst])
-            if (jFirst >= 0 && (jAll < 0 || comparator.compare(removeAllValues[jAll], removeFirstValues[jFirst]) < 0)) {
+            if (jFirst >= 0) {
                 final int comparison = comparator.compare(search[iSearch][0], removeFirstValues[jFirst]);
 
                 // search[iSearch][0] < removeFirstValues[jFirst]
@@ -185,13 +177,13 @@ public class SequentialRemove<E> extends RemoveBase<E>{
                     runAgain = true;
 
                     // if previous element had been found, moves on to the next position in the array
-                    if (firstOccurenceIndexes[kFirst] != Integer.MAX_VALUE) {
+                    if (indexesFirst[kFirst] != Integer.MAX_VALUE) {
                         kFirst++;
                     }
                 }
                 // search[iSearch][0] == removeFirstValues[jFirst] && search[iSearch][0] < indexFirst[kFirst]
-                else if (comparison == 0 && comparator.compare(search[iSearch][1], firstOccurenceIndexes[kFirst]) < 0) {
-                    firstOccurenceIndexes[kFirst] = (int) search[iSearch][1];
+                else if (comparison == 0 && comparator.compare(search[iSearch][1], indexesFirst[kFirst]) < 0) {
+                    indexesFirst[kFirst] = (int) search[iSearch][1];
                 }
             }
             // endregion
@@ -202,7 +194,11 @@ public class SequentialRemove<E> extends RemoveBase<E>{
         }
 
         // concatenates and sorts all the found indexes
-        final int[] allIndexes = ArrayUtil.concatenate(Arrays.copyOf(allOccurenceIndexes, kAll), Arrays.copyOf(firstOccurenceIndexes, kFirst));
+        final int[] allIndexes = ArrayUtil.retainDistinct(ArrayUtil.concatenate(
+                Arrays.copyOf(indexesAll, kAll),
+                Arrays.copyOf(indexesFirst, kFirst)
+        ));
+
         Arrays.parallelSort(allIndexes);
 
         // returns new array without elements to remove

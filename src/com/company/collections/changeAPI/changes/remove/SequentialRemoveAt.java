@@ -1,0 +1,76 @@
+package com.company.collections.changeAPI.changes.remove;
+
+import com.company.collections.changeAPI.Change;
+import com.company.utilities.ArrayUtil;
+
+import java.util.Arrays;
+
+public class SequentialRemoveAt<E> extends RemoveBase<E> {
+
+    // =====================================
+    //               FIELDS
+    // =====================================
+
+    private final Change<E>[] changes;
+
+    // ==================================
+    //            CONSTRUCTOR
+    // ==================================
+
+    public SequentialRemoveAt(
+            final Class<E> clazz,
+            final Change<E>[] changes
+    ) {
+        super(
+                clazz,
+                null,
+                null,
+                null
+        );
+        this.changes = changes;
+    }
+
+    // ====================================
+    //          APPLYING CHANGES
+    // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return false;
+    }
+
+    private int[] concatenateRemovalIndexes(final Change<E>[] changes) {
+        int totalLength = 0;
+        for (Change<E> change : changes) {
+            totalLength += ((RemoveBase<E>) change).removalIndexes.length;
+        }
+
+        final int[] result = new int[totalLength];
+
+        int k = 0;
+        for (Change<E> change : changes) {
+            final RemoveBase<E> remove = (RemoveBase<E>) change;
+            System.arraycopy(remove.removalIndexes, 0, result, k, remove.removalIndexes.length);
+            k += remove.removalIndexes.length;
+        }
+
+        return result;
+    }
+
+    @Override
+    protected E[] applyToImpl(E[] array) {
+        final int[] indexes = ArrayUtil.retainDistinct(concatenateRemovalIndexes(changes));
+        return ArrayUtil.removeAt(array, indexes);
+    }
+
+    // ====================================
+    //          ARRAY CONVERSION
+    // ====================================
+
+    @Override
+    public String toString() {
+        return "SequentialRemoveAt{" +
+                Arrays.toString(changes) +
+                "}";
+    }
+}

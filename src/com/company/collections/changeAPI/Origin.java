@@ -36,6 +36,11 @@ public class Origin<E> extends Change<E> {
     // ====================================
 
     @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return false;
+    }
+
+    @Override
     protected Change<E> toSequential(Change<E>[] changes) {
         return null;
     }

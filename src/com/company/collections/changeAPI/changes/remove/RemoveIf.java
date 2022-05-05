@@ -3,9 +3,18 @@ package com.company.collections.changeAPI.changes.remove;
 import com.company.collections.changeAPI.Change;
 import com.company.utilities.ArrayUtil;
 
+import java.util.Arrays;
 import java.util.function.Predicate;
 
 public class RemoveIf<E> extends RemoveBase<E> {
+
+    // ====================================
+    //               FIELDS
+    // ====================================
+
+    private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{
+            RemoveIf.class,
+    };
 
     // ====================================
     //             CONSTRUCTOR
@@ -40,6 +49,16 @@ public class RemoveIf<E> extends RemoveBase<E> {
     // ====================================
     //          APPLYING CHANGES
     // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return Arrays.asList(SEQUENTIALISEABLE).contains(change.getClass());
+    }
+
+    @Override
+    protected Change<E> toSequential(Change<E>[] changes) {
+        return new SequentialRemoveIf<>(clazz, changes);
+    }
 
     @Override
     protected E[] applyToImpl(E[] array) {

@@ -9,6 +9,15 @@ import java.util.*;
 public class RemoveAll<E> extends RemoveBase<E> {
 
     // ====================================
+    //               FIELDS
+    // ====================================
+
+    private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{
+            RemoveAll.class,
+            RemoveFirst.class
+    };
+
+    // ====================================
     //             CONSTRUCTOR
     // ====================================
 
@@ -67,6 +76,11 @@ public class RemoveAll<E> extends RemoveBase<E> {
     // ====================================
     //          APPLYING CHANGES
     // ====================================
+
+    @Override
+    protected boolean canSequentialise(Change<E> change) {
+        return Arrays.asList(SEQUENTIALISEABLE).contains(change.getClass());
+    }
 
     @Override
     protected E[] applyToImpl(E[] array) {
