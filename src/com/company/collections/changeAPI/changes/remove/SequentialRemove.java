@@ -7,6 +7,13 @@ import com.company.utilities.comparators.ObjectComparator;
 
 import java.util.*;
 
+/**
+ * Sequential implementation of {@link RemoveAll} and {@link RemoveFirst} using a modified version of quickFind to search
+ * simultaneously for all occurrences of certain values an only the first occurrences of others. Optimises this further
+ * by ignoring duplicate values which need to have all instances found but also only the first instance (only looks for
+ * all instances in that case)
+ * @param <E> the type the {@link Change} operates on
+ */
 public class SequentialRemove<E> extends RemoveBase<E>{
 
     // =====================================

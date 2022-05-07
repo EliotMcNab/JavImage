@@ -4,6 +4,10 @@ import com.company.utilities.ArrayUtil;
 
 import java.util.Arrays;
 
+/**
+ * {@link com.company.collections.changeAPI.information.ChangeInformation ChangeInformation} responsible for finding
+ * the indexes of all given values in an array.
+ */
 public class FindAll extends FindBase {
 
     // ====================================

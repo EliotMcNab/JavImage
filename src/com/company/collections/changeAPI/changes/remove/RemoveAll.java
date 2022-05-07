@@ -3,9 +3,13 @@ package com.company.collections.changeAPI.changes.remove;
 import com.company.collections.changeAPI.Change;
 import com.company.utilities.ArrayUtil;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
+/**
+ * {@link Change} responsible for removing all instance of every given element from an array. Allows the removal of
+ * multiple elements at once.
+ * @param <E> the type the Change operates on
+ */
 public class RemoveAll<E> extends RemoveBase<E> {
 
     // ====================================

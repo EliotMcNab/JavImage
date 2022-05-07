@@ -7,6 +7,10 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.function.Function;
 
+/**
+ * {@link Change} responsible for applying a {@link Function} to every element in an array
+ * @param <E> the type the Change operates on
+ */
 public class ForEach<E> extends FunctionalChange<E> {
 
     // ====================================

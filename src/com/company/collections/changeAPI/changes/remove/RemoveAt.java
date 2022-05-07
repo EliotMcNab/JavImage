@@ -5,6 +5,11 @@ import com.company.utilities.ArrayUtil;
 
 import java.util.Arrays;
 
+/**
+ * {@link Change} responsible for removing all elements at the given indexes from an array, ignoring invalid indexes.
+ * Allows the removal of multiple indexes at once.
+ * @param <E> the type the Change operates on
+ */
 public class RemoveAt<E> extends RemoveBase<E> {
 
     // ====================================

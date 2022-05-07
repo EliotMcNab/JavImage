@@ -2,6 +2,11 @@ package com.company.collections.changeAPI.information.count;
 
 import com.company.utilities.ArrayUtil;
 
+/**
+ * {@link com.company.collections.changeAPI.information.ChangeInformation ChangeInformation} responsible for counting
+ * the number of occurrences of certain elements in an array.
+ * @param <E> the type the ChangeInformation operates on
+ */
 public class CountOccurrences<E> extends CountBase<E> {
 
     // ====================================

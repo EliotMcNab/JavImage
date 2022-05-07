@@ -5,6 +5,11 @@ import com.company.utilities.ArrayUtil;
 
 import java.util.*;
 
+/**
+ * {@link Change} responsible for retaining the first instances of given elements in an array. Can retain multiple
+ * elements at once
+ * @param <E> the type the Change operates on
+ */
 public class RetainFirst<E> extends RetainBase<E> {
 
     // ====================================

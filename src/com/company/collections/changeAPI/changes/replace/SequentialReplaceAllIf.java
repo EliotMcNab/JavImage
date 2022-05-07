@@ -5,7 +5,12 @@ import com.company.collections.changeAPI.Change;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-public class SequentialReplaceIf<E> extends ReplaceBase<E> {
+/**
+ * Sequential implementation of {@link ReplaceAllIf} which applies each {@link Predicate} successively to avoid having
+ * to iterate through an array multiple times
+ * @param <E> the type the {@link Change} operates on
+ */
+public class SequentialReplaceAllIf<E> extends ReplaceBase<E> {
 
     // ====================================
     //               FIELDS
@@ -17,7 +22,7 @@ public class SequentialReplaceIf<E> extends ReplaceBase<E> {
     //             CONSTRUCTOR
     // ========w============================
 
-    public SequentialReplaceIf(
+    public SequentialReplaceAllIf(
             final Class<E> clazz,
             final Change<E>[] changes
     ) {
@@ -69,7 +74,7 @@ public class SequentialReplaceIf<E> extends ReplaceBase<E> {
 
     @Override
     public String toString() {
-        return "SequentialReplaceIf{changes=" +
+        return "SequentialReplaceAllIf{changes=" +
                 Arrays.toString(changes) +
                 "}";
     }

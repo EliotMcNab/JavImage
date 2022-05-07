@@ -4,6 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
+/**
+ * {@link Change} used as a base for further modifications. Only stores an initial array and does not result in any
+ * change when applied to an array through toArray or applyTo
+ * @param <E> the type the Change operates on
+ */
 public class Origin<E> extends Change<E> {
 
     // ====================================

@@ -5,7 +5,12 @@ import com.company.collections.changeAPI.Change;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class SequentialAdd<E> extends AddBase<E> {
+/**
+ * Sequential implementation of the algorithms use in {@link Add}
+ * @param <E> the type the {@link Change} operates on
+ */
+public class
+SequentialAdd<E> extends AddBase<E> {
 
     // =====================================
     //               FIELDS

@@ -5,6 +5,11 @@ import com.company.utilities.ArrayUtil;
 
 import java.util.Arrays;
 
+/**
+ * Sequential implementation of {@link RemoveAt} which groups all indexes to remove, ignores duplicates and removes them
+ * all at once
+ * @param <E> the type the {@link Change} operates on
+ */
 public class SequentialRemoveAt<E> extends RemoveBase<E> {
 
     // =====================================

@@ -7,6 +7,10 @@ import com.company.utilities.comparators.ObjectComparator;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ * {@link Change} responsible for retaining only the unique elements in an array.
+ * @param <E> the type the Change operates on
+ */
 public class Unique<E> extends UniqueBase<E> {
 
     // ====================================

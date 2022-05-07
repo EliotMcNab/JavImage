@@ -5,21 +5,26 @@ import com.company.collections.changeAPI.Change;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-public class ReplaceIf<E> extends ReplaceBase<E> {
+/**
+ * {@link Change} responsible for replacing all elements in an array which match the given {@link Predicate} with a new
+ * value
+ * @param <E> the type the Change operates on
+ */
+public class ReplaceAllIf<E> extends ReplaceBase<E> {
 
     // ====================================
     //               FIELDS
     // ====================================
 
     private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{
-            ReplaceIf.class
+            ReplaceAllIf.class
     };
 
     // ====================================
     //             CONSTRUCTOR
     // ====================================
 
-    public ReplaceIf(
+    public ReplaceAllIf(
             final Class<E> clazz,
             final Predicate<E> filter,
             final E replacingValue
@@ -31,7 +36,7 @@ public class ReplaceIf<E> extends ReplaceBase<E> {
         );
     }
 
-    public ReplaceIf(
+    public ReplaceAllIf(
             final Class<E> clazz,
             final Predicate<E> filter,
             final E replacingValue,
@@ -56,7 +61,7 @@ public class ReplaceIf<E> extends ReplaceBase<E> {
 
     @Override
     protected Change<E> toSequential(Change<E>[] changes) {
-        return new SequentialReplaceIf<>(clazz, changes);
+        return new SequentialReplaceAllIf<>(clazz, changes);
     }
 
     @Override
@@ -76,7 +81,7 @@ public class ReplaceIf<E> extends ReplaceBase<E> {
 
     @Override
     public String toString() {
-        return "ReplaceIf{filter=" +
+        return "ReplaceAllIf{filter=" +
                 filter +
                 ", replacingValue=" +
                 toReplace[0] +

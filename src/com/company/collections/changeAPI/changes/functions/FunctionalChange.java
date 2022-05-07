@@ -42,7 +42,7 @@ public abstract class FunctionalChange<E> extends Change<E> {
 
     @Override
     protected Change<E> toSequential(Change<E>[] changes) {
-        return new SequentialFunctionalChange<>(clazz, changes);
+        return new SequentialFunction<>(clazz, changes);
     }
 
     // ====================================

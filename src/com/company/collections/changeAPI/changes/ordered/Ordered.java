@@ -7,6 +7,11 @@ import com.company.utilities.comparators.ObjectComparator;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ * {@link Change} responsible for sorting the elements in an array according to a given {@link Comparator}. By default,
+ * an {@link ObjectComparator} is used for sorting.
+ * @param <E> the type the Change operates on
+ */
 public class Ordered<E> extends OrderedBase<E> {
 
     // ====================================

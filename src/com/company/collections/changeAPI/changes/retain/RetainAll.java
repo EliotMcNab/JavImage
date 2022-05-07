@@ -5,6 +5,10 @@ import com.company.utilities.ArrayUtil;
 
 import java.util.*;
 
+/**
+ * {@link Change} responsible for retaining all instances of given elements in an array
+ * @param <E> the type the Change operates on
+ */
 public class RetainAll<E> extends RetainBase<E> {
 
     // ====================================

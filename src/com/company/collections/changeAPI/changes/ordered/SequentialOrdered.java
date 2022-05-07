@@ -6,6 +6,12 @@ import com.company.utilities.ArrayUtil;
 import java.util.Arrays;
 import java.util.Comparator;
 
+// TODO: fix this so that only consecutive equal Comparators are removed
+/**
+ * Sequential implementation of the algorithms in {@link Ordered} which minimises sorting by discarding duplicate
+ * {@link Comparator Comparators}
+ * @param <E> the type the {@link Change} operates on
+ */
 public class SequentialOrdered<E> extends OrderedBase<E> {
 
     // ====================================

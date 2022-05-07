@@ -5,6 +5,11 @@ import com.company.utilities.ArrayUtil;
 
 import java.util.*;
 
+/**
+ * {@link Change} responsible for removing the first element of every given element from an array. Can remove multiple
+ * elements at once.
+ * @param <E> the type the Change operates on
+ */
 public class RemoveFirst<E> extends RemoveBase<E> {
 
     // ====================================

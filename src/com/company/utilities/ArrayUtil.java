@@ -1,14 +1,6 @@
 package com.company.utilities;
 
 import com.company.collections.changeAPI.Change;
-import com.company.collections.changeAPI.Origin;
-import com.company.collections.changeAPI.changes.clear.Clear;
-import com.company.collections.changeAPI.changes.remove.RemoveAll;
-import com.company.collections.changeAPI.changes.remove.RemoveFirst;
-import com.company.collections.changeAPI.changes.remove.RemoveIf;
-import com.company.collections.changeAPI.changes.retain.RetainAll;
-import com.company.collections.changeAPI.changes.retain.RetainFirst;
-import com.company.collections.changeAPI.changes.retain.RetainIf;
 import com.company.utilities.comparators.ArrayElementComparator;
 import com.company.utilities.comparators.ObjectComparator;
 import org.jetbrains.annotations.Contract;
@@ -48,6 +40,42 @@ public class ArrayUtil {
         for (int i = 0; i < array.length; i++) {
             if (filter.test(array[i])) result[k++] = i;
         }
+        return Arrays.copyOf(result, k);
+    }
+
+    public static <T> T[] retainMatches(
+            @NotNull final T[] array,
+            @NotNull final Predicate<? super T> filter
+    ) {
+        Objects.requireNonNull(array);
+        Objects.requireNonNull(filter);
+        if (array.length == 0) return array;
+
+        final T[] result = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length);
+
+        int k = 0;
+        for (T t : array) {
+            if (filter.test(t)) result[k++] = t;
+        }
+
+        return Arrays.copyOf(result, k);
+    }
+
+    public static <T> T[] retainAtMultipleIndexes(
+            @NotNull final T[] array,
+            final int num,
+            final boolean invert
+    ) {
+        Objects.requireNonNull(array);
+        if (array.length == 0) return array;
+
+        final T[] result = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length / num);
+
+        int k = 0;
+        for (int i = 0; i < array.length; i++) {
+            if ((i % num == 0) != invert) result[k++] = array[i];
+        }
+
         return Arrays.copyOf(result, k);
     }
 
@@ -489,6 +517,33 @@ public class ArrayUtil {
         return result;
     }
 
+    public static <T> T[][] wrapArrays(
+            @NotNull final T[]... arrays
+    ) {
+        Objects.requireNonNull(arrays);
+        final Class<?> arrayClass = arrays.getClass().getComponentType().getComponentType();
+        if (arrays.length == 0) return (T[][]) Array.newInstance(arrayClass, 0, 0);
+
+        for (int i = 0; i < arrays.length - 1; i++) {
+            if (arrays[i].length != arrays[i+1].length) throw new IllegalArgumentException(
+                    "Arrays must be of equal size to be wrapped"
+            );
+        }
+
+        // final Object[][] result = new Object[arrays[0].length][arrays.length];
+        final T[][] result = (T[][]) Array.newInstance(arrayClass, arrays[0].length, arrays.length);
+
+        for (int i = 0; i < arrays[0].length; i++) {
+            final T[] element = (T[]) Array.newInstance(arrayClass, arrays.length);
+            for (int j = 0; j < arrays.length; j++) {
+                element[j] = arrays[j][i];
+            }
+            result[i] = element;
+        }
+
+        return result;
+    }
+
     /**
      * Removes the specified values from the array
      * @param array ({@code E[]}): array from which to remove the values
@@ -557,11 +612,11 @@ public class ArrayUtil {
         final long start = System.currentTimeMillis();
         final Change<Integer> change = Change.of(Integer.class)
                                              .addAll(1, 5, 17, 19, 12, 6, 6, 5, 7, 8, 17)
-                                             .replaceIf(integer -> integer % 2 == 0, -1)
-                                             .replaceIf(integer -> integer % 5 == 0, -2)
                                              .optimise();
         System.out.println(System.currentTimeMillis() - start);
 
-        System.out.println(change);
+        final ArrayList<Integer> test = new ArrayList<>();
+
+        System.out.println(change.sumOf());
     }
 }

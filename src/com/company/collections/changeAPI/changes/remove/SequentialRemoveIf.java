@@ -7,6 +7,11 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
+/**
+ * Sequential implementation of {@link RemoveIf} which applies every {@link Predicate} consecutively on every value in
+ * an array instead of looping multiple time throughout an array
+ * @param <E> the type the {@link Change} operates on
+ */
 public class SequentialRemoveIf<E> extends RemoveBase<E> {
 
     // =====================================

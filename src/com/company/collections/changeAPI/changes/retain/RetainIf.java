@@ -7,6 +7,10 @@ import com.company.utilities.ArrayUtil;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
+/**
+ * {@link Change} responsible for retaining all elements in an array which match the given {@link Predicate}
+ * @param <E> the type the Change operates on
+ */
 public class RetainIf<E> extends RetainBase<E> {
 
     // ====================================

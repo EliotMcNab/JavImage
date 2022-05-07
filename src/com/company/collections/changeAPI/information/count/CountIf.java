@@ -2,6 +2,11 @@ package com.company.collections.changeAPI.information.count;
 
 import java.util.function.Predicate;
 
+/**
+ * {@link com.company.collections.changeAPI.information.ChangeInformation ChangeInformation} responsible for counting
+ * the number of elements in an array which match a given {@link Predicate}
+ * @param <E> the type the ChangeInformation operates on
+ */
 public class CountIf<E> extends CountBase<E> {
 
     // ====================================

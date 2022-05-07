@@ -5,6 +5,11 @@ import com.company.collections.changeAPI.Change;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
+/**
+ * {@link Change} responsible for replacing all elements at the given indexes in an array with new values. Can replace
+ * elements at multiple indexes each with different values
+ * @param <E> the type the Change operates on
+ */
 public class ReplaceAt<E> extends ReplaceBase<E> {
 
     // ====================================
@@ -47,7 +52,6 @@ public class ReplaceAt<E> extends ReplaceBase<E> {
     //          APPLYING CHANGES
     // ====================================
 
-
     @Override
     protected boolean canSequentialise(Change<E> change) {
         return Arrays.asList(SEQUENTIALISEABLE).contains(change.getClass());
@@ -55,10 +59,14 @@ public class ReplaceAt<E> extends ReplaceBase<E> {
 
     @Override
     protected Change<E> toSequential(Change<E>[] changes) {
-        return null;
+        return new SequentialReplaceAt<>(clazz, changes);
     }
 
     public int[] getIndexes() {
+        if (toReplace.length % 2 != 0)
+            throw new IllegalArgumentException("Invalid array of elements to replace, must have equal number of indexes and values");
+
+
         final int[] result = new int[toReplace.length / 2];
 
         try {
@@ -73,6 +81,10 @@ public class ReplaceAt<E> extends ReplaceBase<E> {
     }
 
     public E[] getValues() {
+        if (toReplace.length % 2 != 0)
+            throw new IllegalArgumentException("Invalid array of elements to replace, must have equal number of indexes and values");
+
+
         final E[] result = (E[]) Array.newInstance(clazz, toReplace.length / 2);
 
         try {
@@ -88,9 +100,6 @@ public class ReplaceAt<E> extends ReplaceBase<E> {
 
     @Override
     protected E[] applyToImpl(E[] array) {
-        if (toReplace.length % 2 != 0)
-            throw new IllegalArgumentException("Invalid array of elements to replace, must have equal number of indexes and values");
-
         final int[] indexes = getIndexes();
         final E[] values = getValues();
 

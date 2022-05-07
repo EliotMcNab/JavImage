@@ -4,6 +4,10 @@ import com.company.collections.changeAPI.Change;
 
 import java.lang.reflect.Array;
 
+/**
+ * {@link Change} responsible for clearing an array
+ * @param <E> the type the Change operates on
+ */
 public class Clear<E> extends Change<E> {
 
     // ====================================

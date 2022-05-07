@@ -2,6 +2,11 @@ package com.company.collections.changeAPI.information.get;
 
 import java.util.function.Predicate;
 
+/**
+ * {@link com.company.collections.changeAPI.information.ChangeInformation ChangeInformation} responsible for retrieving
+ * the first element in an array to match a given {@link Predicate}
+ * @param <E> the type the ChangeInformation operates on
+ */
 public class GetFirst<E> extends GetBase<E> {
 
     // ====================================

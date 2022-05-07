@@ -6,6 +6,10 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * {@link Change} responsible for adding elements to an array
+ * @param <E> the type the Change operates on
+ */
 public class Add<E> extends AddBase<E> {
 
     // ====================================

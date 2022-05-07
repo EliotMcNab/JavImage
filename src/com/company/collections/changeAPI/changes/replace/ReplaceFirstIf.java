@@ -5,25 +5,30 @@ import com.company.collections.changeAPI.Change;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-public class ReplaceLast<E> extends ReplaceBase<E> {
+/**
+ * {@link Change} responsible for replacing the first element in an array which matches the given {@link Predicate} with
+ * a new value
+ * @param <E> the type the Change operates on
+ */
+public class ReplaceFirstIf<E> extends ReplaceBase<E> {
 
     // ====================================
     //               FIELDS
     // ====================================
 
     private static final Class<?>[] SEQUENTIALISEABLE = new Class<?>[]{
-            ReplaceLast.class
+            ReplaceFirstIf.class
     };
 
     // ====================================
     //             CONSTRUCTOR
-    // ========w============================
+    // ====================================
 
-    public ReplaceLast(
+    public ReplaceFirstIf(
             final Class<E> clazz,
             final Predicate<E> filter,
             final E replacingValue
-    ) {
+            ) {
         super(
                 clazz,
                 new Object[]{replacingValue},
@@ -31,12 +36,12 @@ public class ReplaceLast<E> extends ReplaceBase<E> {
         );
     }
 
-    public ReplaceLast(
+    public ReplaceFirstIf(
             final Class<E> clazz,
             final Predicate<E> filter,
             final E replacingValue,
             final Change<E> parent
-            ) {
+    ) {
         super(
                 clazz,
                 new Object[]{replacingValue},
@@ -56,14 +61,14 @@ public class ReplaceLast<E> extends ReplaceBase<E> {
 
     @Override
     protected Change<E> toSequential(Change<E>[] changes) {
-        return null;
+        return new SequentialReplaceFirstIf<>(clazz, changes);
     }
 
     @Override
     protected E[] applyToImpl(E[] array) {
         final E[] result = Arrays.copyOf(array, array.length);
 
-        for (int i = array.length - 1; i > 0; i--) {
+        for (int i = 0; i < array.length; i++) {
             if (filter.test(array[i])) {
                 result[i] = (E) toReplace[0];
                 break;
@@ -79,7 +84,7 @@ public class ReplaceLast<E> extends ReplaceBase<E> {
 
     @Override
     public String toString() {
-        return "ReplaceLast{filter=" +
+        return "ReplaceFirstIf{filter=" +
                 filter +
                 ", replacingValue=" +
                 toReplace[0] +

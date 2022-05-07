@@ -6,6 +6,11 @@ import com.company.utilities.ArrayUtil;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
+/**
+ * {@link Change} responsible for removing elements in an array if they match a given {@link Predicate}. Removes all
+ * instances that match the predicate
+ * @param <E> the type the Change operates on
+ */
 public class RemoveIf<E> extends RemoveBase<E> {
 
     // ====================================
